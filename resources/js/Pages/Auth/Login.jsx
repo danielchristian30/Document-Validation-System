@@ -5,7 +5,7 @@ export default function Login({ status, canResetPassword }) {
     const [showPassword, setShowPassword] = useState(false);
 
     const { data, setData, post, processing, errors, reset } = useForm({
-        email: '',
+        login: '',
         password: '',
         remember: false,
     });
@@ -56,7 +56,7 @@ export default function Login({ status, canResetPassword }) {
                                 Login Portal Pegawai
                             </h2>
                             <p className="mt-1.5 text-xs text-[#7F8C8D]">
-                                Masukkan kredensial email resmi untuk mengelola validasi dokumen.
+                                Masukkan kredensial username atau email resmi untuk mengelola validasi dokumen.
                             </p>
                         </div>
 
@@ -73,34 +73,34 @@ export default function Login({ status, canResetPassword }) {
                             {/* INPUT EMAIL */}
                             <div>
                                 <label 
-                                    htmlFor="email" 
+                                    htmlFor="login" 
                                     className="block text-xs font-bold uppercase tracking-wider text-[#262626] font-montserrat"
                                 >
-                                    Email
+                                    Username / Email
                                 </label>
                                 <div className="mt-1.5">
                                     <input
-                                        id="email"
-                                        type="email"
-                                        name="email"
-                                        value={data.email}
+                                        id="login"
+                                        type="text"
+                                        name="login"
+                                        value={data.login}
                                         autoComplete="username"
                                         isFocused={true}
-                                        onChange={(e) => setData('email', e.target.value)}
-                                        placeholder="nama@denpasarkota.go.id"
+                                        onChange={(e) => setData('login', e.target.value)}
+                                        placeholder="Username atau nama@denpasarkota.go.id"
                                         className={`w-full rounded-[8px] border px-3.5 py-2.5 text-sm font-medium text-[#262626] placeholder-[#7F8C8D]/60 transition focus:outline-none ${
-                                            errors.email
+                                            errors.login
                                                 ? 'border-[#D92020] bg-[#D92020]/5 focus:border-[#D92020] focus:ring-1 focus:ring-[#D92020]'
                                                 : 'border-[#E5E7EB] bg-white focus:border-[#8B0F14] focus:ring-1 focus:ring-[#8B0F14]'
                                         }`}
                                     />
                                 </div>
-                                {errors.email && (
+                                {errors.login && (
                                     <p className="mt-1.5 flex items-center gap-1 text-xs text-[#D92020]">
                                         <svg className="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                         </svg>
-                                        <span>{errors.email}</span>
+                                        <span>{errors.login}</span>
                                     </p>
                                 )}
                             </div>
