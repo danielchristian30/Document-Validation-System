@@ -87,7 +87,7 @@ export default function Login({ status, canResetPassword }) {
                                         autoComplete="username"
                                         isFocused={true}
                                         onChange={(e) => setData('login', e.target.value)}
-                                        placeholder="Username atau nama@denpasarkota.go.id"
+                                        placeholder="Username atau email@denpasarkota.go.id"
                                         className={`w-full rounded-[8px] border px-3.5 py-2.5 text-sm font-medium text-[#262626] placeholder-[#7F8C8D]/60 transition focus:outline-none ${
                                             errors.login
                                                 ? 'border-[#D92020] bg-[#D92020]/5 focus:border-[#D92020] focus:ring-1 focus:ring-[#D92020]'

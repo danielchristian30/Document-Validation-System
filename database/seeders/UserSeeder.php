@@ -20,6 +20,13 @@ class UserSeeder extends Seeder
             'password' => 'SatuDataDenpasar',
             'role' => 'superadmin',
             'is_active' => True,
+
+            'name' => 'Mario',
+            'username' => 'mariogebuh',
+            'email' => 'mario@denpasarkota.com',
+            'password' => 'Mario123',
+            'role' => 'employee',
+            'is_active' => True,
         ]);
     }
 }

@@ -32,6 +32,10 @@ Route::get('/dashboard', function (Request $request) {
 // Route Superadmin
 Route::middleware(['auth', 'role:superadmin'])->group(function () {
     Route::get('/superadmin/dashboard', [SuperadminDashboardController::class, 'index'])->name('superadmin.dashboard');
+
+    Route::get('/superadmin/users', function () {
+        return Inertia::render('Superadmin/Users/Index');
+    })->name('superadmin.users.index');
 });
 
 // Route Admin
