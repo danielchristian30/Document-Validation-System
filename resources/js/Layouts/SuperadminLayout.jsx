@@ -12,14 +12,14 @@ export default function SuperadminLayout({ children }) {
             <div className="sticky top-0 z-50 h-1 w-full bg-[#E6001A]" />
 
             <div className="flex">
-                {/* SIDEBAR PANEL SUPERADMIN (Sticky & Pas Tinggi Layar) */}
+                {/* SIDEBAR PANEL SUPERADMIN */}
                 <aside className="sticky top-1 hidden h-[calc(100vh-4px)] w-64 flex-col justify-between bg-[#8B0F14] text-white lg:flex shrink-0">
                     <div className="flex flex-col overflow-hidden">
                         {/* Header Sidebar */}
                         <div className="flex h-20 items-center gap-3 border-b border-white/10 px-6 shrink-0">
                             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[8px] bg-white/10">
                                 <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 01-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                 </svg>
                             </div>
                             <div>
@@ -77,7 +77,7 @@ export default function SuperadminLayout({ children }) {
                         </nav>
                     </div>
 
-                    {/* Profil & Dropdown Menu di Bagian Bawah Sidebar (Selalu Terkunci di Bawah) */}
+                    {/* Profil & Dropdown Menu di Bagian Bawah Sidebar */}
                     <div className="relative border-t border-white/10 p-4 shrink-0">
                         {isProfileOpen && (
                             <div className="absolute bottom-full left-4 right-4 mb-2 overflow-hidden rounded-[8px] border border-[#E5E7EB] bg-white shadow-xl z-50">
@@ -116,7 +116,7 @@ export default function SuperadminLayout({ children }) {
                         >
                             <div className="flex items-center gap-3 overflow-hidden">
                                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white font-montserrat font-bold text-[#8B0F14]">
-                                    {user?.username ?user.email.charAt(0).toUpperCase() : 'S'}
+                                    {user?.email ? user.email.charAt(0).toUpperCase() : 'S'}
                                 </div>
                                 <div className="overflow-hidden">
                                     <p className="truncate text-xs font-bold text-white uppercase">{user?.username || 'Super Admin'}</p>

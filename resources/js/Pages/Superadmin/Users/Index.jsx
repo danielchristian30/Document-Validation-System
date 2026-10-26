@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, useForm, router } from '@inertiajs/react';
 import SuperadminLayout from '@/Layouts/SuperadminLayout';
 
-export default function UsersIndex() {
+export default function UsersIndex({ users = [] }) { // <-- Berikan default value [] di sini
     // State Tab, Search, & Dropdown Menu
     const [activeTab, setActiveTab] = useState('active'); // 'active' | 'inactive'
     const [searchQuery, setSearchQuery] = useState('');
@@ -18,6 +18,11 @@ export default function UsersIndex() {
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
 
+    // Amankan pemfilteran dengan memastikan `users` adalah array
+    const safeUsers = Array.isArray(users) ? users : [];
+    const activeUsers = safeUsers.filter((u) => u.is_active === 1 || u.is_active === true);
+    const inactiveUsers = safeUsers.filter((u) => u.is_active === 0 || u.is_active === false);
+
     // Reset ke Halaman 1 saat ganti Tab atau melakukan Pencarian
     useEffect(() => {
         setCurrentPage(1);
@@ -29,160 +34,6 @@ export default function UsersIndex() {
         window.addEventListener('scroll', handleScroll, true);
         return () => window.removeEventListener('scroll', handleScroll, true);
     }, []);
-
-    // Mock Data Pengguna Aktif
-    const [activeUsers, setActiveUsers] = useState([
-        {
-            id: 'usr-001',
-            name: 'Ayu Pramesti',
-            username: 'ayu.pramesti',
-            email: 'ayu.pramesti@denpasarkota.go.id',
-            role: 'admin',
-            role_label: 'Admin',
-            bidang: 'tik',
-            bidang_label: 'TIK',
-            is_active: true,
-            created_at: '12 Jan 2026, 09:15 WITA',
-        },
-        {
-            id: 'usr-002',
-            name: 'I Made Wira Putra',
-            username: 'wira.putra',
-            email: 'wira.putra@denpasarkota.go.id',
-            role: 'employee',
-            role_label: 'Pegawai',
-            bidang: 'persandian',
-            bidang_label: 'Persandian',
-            is_active: true,
-            created_at: '15 Feb 2026, 11:30 WITA',
-        },
-        {
-            id: 'usr-003',
-            name: 'Kadek Dwi Lestari',
-            username: 'dwi.lestari',
-            email: 'dwi.lestari@denpasarkota.go.id',
-            role: 'employee',
-            role_label: 'Pegawai',
-            bidang: 'pikp',
-            bidang_label: 'PIKP',
-            is_active: true,
-            created_at: '01 Mar 2026, 08:45 WITA',
-        },
-        {
-            id: 'usr-005',
-            name: 'I Putu Agus Pratama',
-            username: 'agus.pratama',
-            email: 'agus.pratama@denpasarkota.go.id',
-            role: 'employee',
-            role_label: 'Pegawai',
-            bidang: 'tik',
-            bidang_label: 'TIK',
-            is_active: true,
-            created_at: '10 Mar 2026, 10:20 WITA',
-        },
-        {
-            id: 'usr-006',
-            name: 'Ni Luh Made Suarni',
-            username: 'luh.suarni',
-            email: 'luh.suarni@denpasarkota.go.id',
-            role: 'admin',
-            role_label: 'Admin',
-            bidang: 'sekdis',
-            bidang_label: 'Sekdis',
-            is_active: true,
-            created_at: '22 Mar 2026, 14:10 WITA',
-        },
-        {
-            id: 'usr-007',
-            name: 'I Nyoman Triyasa',
-            username: 'nyoman.triyasa',
-            email: 'nyoman.triyasa@denpasarkota.go.id',
-            role: 'employee',
-            role_label: 'Pegawai',
-            bidang: 'persandian',
-            bidang_label: 'Persandian',
-            is_active: true,
-            created_at: '05 Apr 2026, 09:00 WITA',
-        },
-        {
-            id: 'usr-008',
-            name: 'Ketut Ari Wijaya',
-            username: 'ari.wijaya',
-            email: 'ari.wijaya@denpasarkota.go.id',
-            role: 'employee',
-            role_label: 'Pegawai',
-            bidang: 'pikp',
-            bidang_label: 'PIKP',
-            is_active: true,
-            created_at: '18 Apr 2026, 11:15 WITA',
-        },
-        {
-            id: 'usr-009',
-            name: 'Putu Eka Suryani',
-            username: 'eka.suryani',
-            email: 'eka.suryani@denpasarkota.go.id',
-            role: 'admin',
-            role_label: 'Admin',
-            bidang: 'tik',
-            bidang_label: 'TIK',
-            is_active: true,
-            created_at: '02 Mei 2026, 15:40 WITA',
-        },
-        {
-            id: 'usr-010',
-            name: 'Made Ananda Putra',
-            username: 'ananda.putra',
-            email: 'ananda.putra@denpasarkota.go.id',
-            role: 'employee',
-            role_label: 'Pegawai',
-            bidang: 'sekdis',
-            bidang_label: 'Sekdis',
-            is_active: true,
-            created_at: '19 Mei 2026, 08:30 WITA',
-        },
-        {
-            id: 'usr-011',
-            name: 'Ni Kadek Sintya',
-            username: 'kadek.sintya',
-            email: 'kadek.sintya@denpasarkota.go.id',
-            role: 'employee',
-            role_label: 'Pegawai',
-            bidang: 'persandian',
-            bidang_label: 'Persandian',
-            is_active: true,
-            created_at: '01 Jun 2026, 13:50 WITA',
-        },
-        {
-            id: 'usr-012',
-            name: 'I Gede Yudiantara',
-            username: 'yudiantara',
-            email: 'yudiantara@denpasarkota.go.id',
-            role: 'employee',
-            role_label: 'Pegawai',
-            bidang: 'tik',
-            bidang_label: 'TIK',
-            is_active: true,
-            created_at: '14 Jun 2026, 10:05 WITA',
-        },
-    ]);
-
-    // Mock Data Pengguna Nonaktif
-    const [inactiveUsers, setInactiveUsers] = useState([
-        {
-            id: 'usr-004',
-            name: 'Gede Budi Santosa',
-            username: 'budi.santosa',
-            email: 'budi.santosa@denpasarkota.go.id',
-            role: 'admin',
-            role_label: 'Admin',
-            bidang: 'sekdis',
-            bidang_label: 'Sekdis',
-            is_active: false,
-            created_at: '10 Nov 2025, 14:00 WITA',
-            deactivated_at: '05 Okt 2026, 16:20 WITA',
-            reason: 'Indikasi pelanggaran keamanan / Mutasi',
-        },
-    ]);
 
     // Toggle Dropdown 3 Titik
     const toggleDropdown = (id, e) => {
@@ -218,24 +69,13 @@ export default function UsersIndex() {
     const handleConfirmDeactivate = () => {
         if (!selectedUser) return;
 
-        if (activeTab === 'active') {
-            setActiveUsers(activeUsers.filter((u) => u.id !== selectedUser.id));
-            setInactiveUsers([
-                ...inactiveUsers,
-                { ...selectedUser, is_active: false, deactivated_at: 'Hari ini, 10:00 WITA' },
-            ]);
-        } else {
-            setInactiveUsers(inactiveUsers.filter((u) => u.id !== selectedUser.id));
-        }
-
-        setShowDeleteModal(false);
-        setSelectedUser(null);
-    };
-
-    const handleReactivate = (user) => {
-        setInactiveUsers(inactiveUsers.filter((u) => u.id !== user.id));
-        setActiveUsers([...activeUsers, { ...user, is_active: true }]);
-        closeDropdown();
+        router.delete(route('superadmin.users.destroy', selectedUser.id), {
+            preserveScroll: true,
+            onSuccess: () => {
+                setShowDeleteModal(false);
+                setSelectedUser(null);
+            },
+        });
     };
 
     // Filtered Users berdasarkan Search Query
@@ -243,10 +83,9 @@ export default function UsersIndex() {
     const filteredUsers = currentList.filter(
         (u) =>
             u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            u.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
             u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            u.role_label.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            u.bidang_label.toLowerCase().includes(searchQuery.toLowerCase())
+            u.role.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (u.bidang && u.bidang.toLowerCase().includes(searchQuery.toLowerCase()))
     );
 
     // Hitung Slicing Paginasi
@@ -376,11 +215,10 @@ export default function UsersIndex() {
                             {paginatedUsers.length > 0 ? (
                                 paginatedUsers.map((u) => (
                                     <tr key={u.id} className="transition hover:bg-[#FCEBEC]/20">
-                                        {/* Nama & Email */}
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#8B0F14] font-montserrat font-bold text-white">
-                                                    {u.name.charAt(0)}
+                                                    {u.name ? u.name.charAt(0) : 'U'}
                                                 </div>
                                                 <div>
                                                     <p className="font-montserrat font-bold text-[#262626]">
@@ -390,26 +228,20 @@ export default function UsersIndex() {
                                                 </div>
                                             </div>
                                         </td>
-
-                                        {/* Role */}
                                         <td className="px-6 py-4 font-semibold text-[#262626]">
-                                            <span className="inline-flex items-center rounded-md bg-[#8B0F14]/10 px-2.5 py-1 text-xs font-semibold text-[#8B0F14]">
-                                                {u.role_label}
+                                            <span className="inline-flex items-center rounded-md bg-[#8B0F14]/10 px-2.5 py-1 text-xs font-semibold text-[#8B0F14] uppercase">
+                                                {u.role}
                                             </span>
                                         </td>
-
-                                        {/* Bidang */}
                                         <td className="px-6 py-4 font-semibold text-[#262626]">
-                                            <span className="inline-flex items-center rounded-md bg-[#F5F5F5] px-2.5 py-1 text-xs text-[#262626]">
-                                                {u.bidang_label}
+                                            <span className="inline-flex items-center rounded-md bg-[#F5F5F5] px-2.5 py-1 text-xs text-[#262626] uppercase">
+                                                {u.bidang || '-'}
                                             </span>
                                         </td>
-
-                                        {/* Status & Timestamp Sesuai Tab */}
                                         {activeTab === 'active' ? (
                                             <>
                                                 <td className="px-6 py-4 font-mono text-[#7F8C8D]">
-                                                    {u.created_at}
+                                                    {new Date(u.created_at).toLocaleString('id-ID')}
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <span className="inline-flex items-center gap-1 rounded-full bg-[#1E8E3E]/10 px-2.5 py-1 text-[11px] font-semibold text-[#1E8E3E]">
@@ -427,12 +259,10 @@ export default function UsersIndex() {
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-4 font-mono text-[#7F8C8D]">
-                                                    {u.deactivated_at}
+                                                    {u.deactivated_at ? new Date(u.deactivated_at).toLocaleString('id-ID') : '-'}
                                                 </td>
                                             </>
                                         )}
-
-                                        {/* Action Button 3 Dots */}
                                         <td className="px-6 py-4 text-right">
                                             <button
                                                 onClick={(e) => toggleDropdown(u.id, e)}
@@ -456,7 +286,7 @@ export default function UsersIndex() {
                     </table>
                 </div>
 
-                {/* PAGINASI (MAX 10 PER HALAMAN) */}
+                {/* PAGINASI */}
                 <div className="flex flex-col gap-4 border-t border-[#E5E7EB] px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
                     <p className="text-xs text-[#7F8C8D]">
                         Menampilkan{' '}
@@ -551,26 +381,15 @@ export default function UsersIndex() {
                                         Nonaktifkan Akun
                                     </button>
                                 ) : (
-                                    <>
-                                        <button
-                                            onClick={() => handleReactivate(u)}
-                                            className="flex w-full items-center gap-2.5 px-4 py-2 text-xs font-semibold text-[#1E8E3E] transition hover:bg-[#1E8E3E]/10"
-                                        >
-                                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                            </svg>
-                                            Aktifkan Kembali
-                                        </button>
-                                        <button
-                                            onClick={() => handleDeleteClick(u)}
-                                            className="flex w-full items-center gap-2.5 px-4 py-2 text-xs font-semibold text-[#D92020] transition hover:bg-[#D92020]/10"
-                                        >
-                                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                            </svg>
-                                            Hapus Permanen
-                                        </button>
-                                    </>
+                                    <button
+                                        onClick={() => handleDeleteClick(u)}
+                                        className="flex w-full items-center gap-2.5 px-4 py-2 text-xs font-semibold text-[#1E8E3E] transition hover:bg-[#1E8E3E]/10"
+                                    >
+                                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        Aktifkan Kembali
+                                    </button>
                                 )}
                             </>
                         );
@@ -578,14 +397,13 @@ export default function UsersIndex() {
                 </div>
             )}
 
-            {/* MODAL DETAIL PROFIL (DESAIN SESUAI ACUAN GAMBAR) */}
+            {/* MODAL DETAIL PROFIL */}
             {showDetailModal && selectedUser && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm transition-opacity">
                     <div
                         className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl transition-all sm:p-7"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        {/* Tombol Close (X) */}
                         <button
                             onClick={() => setShowDetailModal(false)}
                             className="absolute right-5 top-5 rounded-lg p-1 text-[#7F8C8D] hover:bg-[#F5F5F5] hover:text-[#262626]"
@@ -595,7 +413,6 @@ export default function UsersIndex() {
                             </svg>
                         </button>
 
-                        {/* Avatar & Header Profil */}
                         <div className="flex items-center gap-4">
                             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#8B0F14] font-montserrat text-lg font-bold text-white shadow-sm">
                                 {selectedUser.name.charAt(0)}
@@ -604,58 +421,45 @@ export default function UsersIndex() {
                                 <h3 className="font-montserrat text-lg font-bold text-[#262626]">
                                     {selectedUser.name}
                                 </h3>
-                                <p className="text-xs text-[#7F8C8D]">@{selectedUser.username}</p>
+                                <p className="text-xs text-[#7F8C8D]">{selectedUser.email}</p>
                             </div>
                         </div>
 
-                        {/* Rincian Atribut Pengguna */}
                         <div className="mt-6 space-y-3 rounded-xl bg-[#F8F9FA] p-4 text-xs border border-[#E5E7EB]/60">
                             <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-2.5">
-                                <span className="text-[#7F8C8D]">Nama Lengkap (name):</span>
+                                <span className="text-[#7F8C8D]">Nama Lengkap:</span>
                                 <span className="font-semibold text-[#262626]">{selectedUser.name}</span>
                             </div>
-
                             <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-2.5">
-                                <span className="text-[#7F8C8D]">Username (username):</span>
-                                <span className="font-mono font-semibold text-[#262626]">{selectedUser.username}</span>
-                            </div>
-
-                            <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-2.5">
-                                <span className="text-[#7F8C8D]">Email (email):</span>
+                                <span className="text-[#7F8C8D]">Email:</span>
                                 <span className="font-medium text-[#262626]">{selectedUser.email}</span>
                             </div>
-
                             <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-2.5">
-                                <span className="text-[#7F8C8D]">Role (peran):</span>
-                                <span className="font-bold text-[#8B0F14]">{selectedUser.role_label}</span>
+                                <span className="text-[#7F8C8D]">Role (Peran):</span>
+                                <span className="font-bold text-[#8B0F14] uppercase">{selectedUser.role}</span>
                             </div>
-
                             <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-2.5">
                                 <span className="text-[#7F8C8D]">Bidang:</span>
-                                <span className="font-semibold text-[#262626]">{selectedUser.bidang_label}</span>
+                                <span className="font-semibold text-[#262626] uppercase">{selectedUser.bidang || '-'}</span>
                             </div>
-
                             <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-2.5">
-                                <span className="text-[#7F8C8D]">Status Akun (is_active):</span>
+                                <span className="text-[#7F8C8D]">Status Akun:</span>
                                 <span className={`font-bold ${selectedUser.is_active ? 'text-[#1E8E3E]' : 'text-[#D92020]'}`}>
-                                    {selectedUser.is_active ? 'Aktif (1)' : 'Nonaktif (0)'}
+                                    {selectedUser.is_active ? 'Aktif' : 'Nonaktif'}
                                 </span>
                             </div>
-
                             <div className="flex items-center justify-between">
-                                <span className="text-[#7F8C8D]">Waktu Dibuat (created_at):</span>
-                                <span className="font-mono text-[#262626]">{selectedUser.created_at}</span>
+                                <span className="text-[#7F8C8D]">Waktu Dibuat:</span>
+                                <span className="font-mono text-[#262626]">{new Date(selectedUser.created_at).toLocaleString('id-ID')}</span>
                             </div>
-
-                            {!selectedUser.is_active && (
+                            {!selectedUser.is_active && selectedUser.deactivated_at && (
                                 <div className="flex items-center justify-between border-t border-[#E5E7EB] pt-2.5">
                                     <span className="text-[#7F8C8D]">Dinonaktifkan Pada:</span>
-                                    <span className="font-mono font-semibold text-[#D92020]">{selectedUser.deactivated_at}</span>
+                                    <span className="font-mono font-semibold text-[#D92020]">{new Date(selectedUser.deactivated_at).toLocaleString('id-ID')}</span>
                                 </div>
                             )}
                         </div>
 
-                        {/* Tombol Tutup Modal */}
                         <div className="mt-6 flex justify-end">
                             <button
                                 onClick={() => setShowDetailModal(false)}
@@ -668,7 +472,7 @@ export default function UsersIndex() {
                 </div>
             )}
 
-            {/* MODAL KONFIRMASI NONAKTIF / HAPUS */}
+            {/* MODAL KONFIRMASI */}
             {showDeleteModal && selectedUser && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm transition-opacity">
                     <div
@@ -676,19 +480,19 @@ export default function UsersIndex() {
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="flex items-start gap-4">
-                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#D92020]/10 text-[#D92020]">
+                            <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${selectedUser.is_active ? 'bg-[#D92020]/10 text-[#D92020]' : 'bg-[#1E8E3E]/10 text-[#1E8E3E]'}`}>
                                 <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                                 </svg>
                             </div>
                             <div>
                                 <h3 className="font-montserrat text-lg font-bold text-[#262626]">
-                                    {activeTab === 'active' ? 'Nonaktifkan Akun Pengguna?' : 'Hapus Permanen Akun?'}
+                                    {selectedUser.is_active ? 'Nonaktifkan Akun Pengguna?' : 'Aktifkan Kembali Akun?'}
                                 </h3>
                                 <p className="mt-1 text-xs text-[#7F8C8D]">
-                                    {activeTab === 'active'
+                                    {selectedUser.is_active
                                         ? `Akun ${selectedUser.name} akan dinonaktifkan. Pengguna tidak akan dapat mengakses sistem SIVALDEN.`
-                                        : `Akun ${selectedUser.name} akan dihapus secara permanen dari basis data.`}
+                                        : `Akun ${selectedUser.name} akan diaktifkan kembali dan dapat mengakses sistem.`}
                                 </p>
                             </div>
                         </div>
@@ -702,9 +506,9 @@ export default function UsersIndex() {
                             </button>
                             <button
                                 onClick={handleConfirmDeactivate}
-                                className="rounded-[8px] bg-[#E6001A] px-4 py-2 text-xs font-semibold text-white hover:bg-[#6B0A0F] transition"
+                                className={`rounded-[8px] px-4 py-2 text-xs font-semibold text-white transition ${selectedUser.is_active ? 'bg-[#D92020] hover:bg-[#B51A1A]' : 'bg-[#1E8E3E] hover:bg-[#166E2E]'}`}
                             >
-                                Ya, Lanjutkan
+                                {selectedUser.is_active ? 'Ya, Nonaktifkan' : 'Ya, Aktifkan'}
                             </button>
                         </div>
                     </div>

@@ -42,11 +42,15 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
+        // ubah input to lowercase
+        $loginInput = Str::lower($this->input('login'));
+
         // cek input email atau username
-        $loginField = filter_var($this->input('login'), FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+        $loginField = filter_var($loginInput, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
 
         $this->merge([
-            $loginField => $this->input('login')
+            'login' => $loginInput,
+            $loginField => $loginInput
         ]);
 
         if (! Auth::attempt($this->only($loginField, 'password'), $this->boolean('remember'))) {
@@ -54,6 +58,14 @@ class LoginRequest extends FormRequest
 
             throw ValidationException::withMessages([
                 'login' => __('auth.failed'),
+            ]);
+        }
+
+        $user = Auth::getProvider()->retrieveByCredentials($this->only('email'));
+        if ($user && !$user->is_active) {
+            Auth::logout();
+            throw ValidationException::withMessages([
+                'login' => 'Akun Anda telah dinonaktifkan. Silakan menghubungi Superadmin.'
             ]);
         }
 
@@ -88,6 +100,6 @@ class LoginRequest extends FormRequest
      */
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
+        return Str::transliterate(Str::lower($this->string('login')).'|'.$this->ip());
     }
 }
