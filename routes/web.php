@@ -8,6 +8,7 @@ use Inertia\Inertia;
 use App\Http\Controllers\Superadmin\DashboardController as SuperadminDashboardController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Employee\DashboardController as EmployeeDashboardController;
+use App\Http\Controllers\Superadmin\UserManagementController as SuperadminUserManagementController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -32,6 +33,13 @@ Route::get('/dashboard', function (Request $request) {
 // Route Superadmin
 Route::middleware(['auth', 'role:superadmin'])->group(function () {
     Route::get('/superadmin/dashboard', [SuperadminDashboardController::class, 'index'])->name('superadmin.dashboard');
+
+    // UserManagement Controller
+    Route::get('/superadmin/users', [SuperadminUserManagementController::class, 'index'])->name('superadmin.users.index');
+    Route::post('/superadmin/users', [SuperadminUserManagementController::class, 'store'])->name('superadmin.users.store');
+    Route::put('/superadmin/users/{user}', [SuperadminUserManagementController::class, 'update'])->name('superadmin.users.update');
+    Route::delete('/superadmin/users/{user}', [SuperadminUserManagementController::class, 'destroy'])->name('superadmin.users.destroy');
+
 });
 
 // Route Admin
