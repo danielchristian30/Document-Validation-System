@@ -21,7 +21,7 @@ Route::get('/', function () {
     
 // Routing berdasarkan Role
 Route::get('/dashboard', function (Request $request) {
-    $role = $request->user()->role;    
+    $role = $request->user()->role;      
     return match($role) {
         'superadmin'    => redirect()->route('superadmin.dashboard'),
         'admin'         => redirect()->route('admin.dashboard'),

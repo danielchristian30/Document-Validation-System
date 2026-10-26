@@ -1,41 +1,78 @@
 import React, { useState, useEffect } from 'react';
-import { Head, Link, useForm, router } from '@inertiajs/react';
+import { createPortal } from 'react-dom';
+import { Head, router, usePage } from '@inertiajs/react';
 import SuperadminLayout from '@/Layouts/SuperadminLayout';
+import CreateEditModal from './CreateEdit';
 
-export default function UsersIndex({ users = [] }) { // <-- Berikan default value [] di sini
+export default function UsersIndex({ 
+    users = [],
+    rolesList = [],
+    bidangList = [],
+}) {
     // State Tab, Search, & Dropdown Menu
-    const [activeTab, setActiveTab] = useState('active'); // 'active' | 'inactive'
+    const [activeTab, setActiveTab] = useState('active');
     const [searchQuery, setSearchQuery] = useState('');
     const [activeDropdown, setActiveDropdown] = useState(null);
     const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0 });
 
-    // State Paginasi (Maksimal 10 Data Per Halaman)
+    // State Paginasi
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
 
-    // State Modal
+    // State Modal & Mount Check
     const [selectedUser, setSelectedUser] = useState(null);
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [showFormModal, setShowFormModal] = useState(false);
+    const [mounted, setMounted] = useState(false);
 
-    // Amankan pemfilteran dengan memastikan `users` adalah array
+    // Flash message dari Laravel yang dibagikan melalui HandleInertiaRequests.
+    const { flash, auth } = usePage().props;
+    const [toast, setToast] = useState(null);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    // Buat toast ketika ada flash error atau success baru dari backend.
+    useEffect(() => {
+        const message = flash?.error || flash?.success;
+
+        if (!message) return;
+
+        setToast({
+            id: Date.now(),
+            type: flash?.error ? 'error' : 'success',
+            message,
+        });
+    }, [flash?.error, flash?.success]);
+
+    // Tutup otomatis setelah 4,5 detik.
+    useEffect(() => {
+        // Toast loading tetap terlihat sampai server memberikan respons.
+        if (!toast || toast.type === 'loading') return;
+
+        const timer = window.setTimeout(() => {
+            setToast(null);
+        }, 4500);
+
+        return () => window.clearTimeout(timer);
+    }, [toast]);
+
     const safeUsers = Array.isArray(users) ? users : [];
     const activeUsers = safeUsers.filter((u) => u.is_active === 1 || u.is_active === true);
     const inactiveUsers = safeUsers.filter((u) => u.is_active === 0 || u.is_active === false);
 
-    // Reset ke Halaman 1 saat ganti Tab atau melakukan Pencarian
     useEffect(() => {
         setCurrentPage(1);
     }, [activeTab, searchQuery]);
 
-    // Tutup dropdown otomatis saat window di-scroll
     useEffect(() => {
         const handleScroll = () => setActiveDropdown(null);
         window.addEventListener('scroll', handleScroll, true);
         return () => window.removeEventListener('scroll', handleScroll, true);
     }, []);
 
-    // Toggle Dropdown 3 Titik
     const toggleDropdown = (id, e) => {
         e.stopPropagation();
         if (activeDropdown === id) {
@@ -50,10 +87,20 @@ export default function UsersIndex({ users = [] }) { // <-- Berikan default valu
         }
     };
 
-    // Close Dropdown saat klik di luar
     const closeDropdown = () => setActiveDropdown(null);
 
-    // Action Handlers
+    const handleCreateUser = () => {
+        setSelectedUser(null);
+        setShowFormModal(true);
+        closeDropdown();
+    };
+
+    const handleEditUser = (user) => {
+        setSelectedUser(user);
+        setShowFormModal(true);
+        closeDropdown();
+    };
+
     const handleViewProfile = (user) => {
         setSelectedUser(user);
         setShowDetailModal(true);
@@ -69,16 +116,56 @@ export default function UsersIndex({ users = [] }) { // <-- Berikan default valu
     const handleConfirmDeactivate = () => {
         if (!selectedUser) return;
 
+        // Validasi lokal untuk menampilkan alert tanpa menunggu request ke server.
+        // Backend tetap wajib memvalidasi aturan yang sama untuk keamanan.
+        if (String(auth?.user?.id) === String(selectedUser.id)) {
+            setToast({
+                id: Date.now(),
+                type: 'error',
+                message: 'Anda tidak dapat menonaktifkan akun sendiri.',
+            });
+            setShowDeleteModal(false);
+            setSelectedUser(null);
+            return;
+        }
+
+        if (selectedUser.role === 'superadmin') {
+            setToast({
+                id: Date.now(),
+                type: 'error',
+                message: 'Akun Superadmin tidak bisa dinonaktifkan.',
+            });
+            setShowDeleteModal(false);
+            setSelectedUser(null);
+            return;
+        }
+
+        // Operasi yang memang diizinkan tetap menunggu konfirmasi backend.
+        // Toast loading langsung muncul agar pengguna tahu proses dimulai.
+        setToast({
+            id: Date.now(),
+            type: 'loading',
+            message: selectedUser.is_active
+                ? `Sedang menonaktifkan akun ${selectedUser.name}...`
+                : `Sedang mengaktifkan kembali akun ${selectedUser.name}...`,
+        });
+
         router.delete(route('superadmin.users.destroy', selectedUser.id), {
             preserveScroll: true,
             onSuccess: () => {
                 setShowDeleteModal(false);
                 setSelectedUser(null);
             },
+            onError: () => {
+                setToast({
+                    id: Date.now(),
+                    type: 'error',
+                    message: 'Permintaan gagal diproses. Periksa kembali koneksi dan data pengguna.',
+                });
+            },
         });
     };
 
-    // Filtered Users berdasarkan Search Query
     const currentList = activeTab === 'active' ? activeUsers : inactiveUsers;
     const filteredUsers = currentList.filter(
         (u) =>
@@ -88,7 +175,6 @@ export default function UsersIndex({ users = [] }) { // <-- Berikan default valu
             (u.bidang && u.bidang.toLowerCase().includes(searchQuery.toLowerCase()))
     );
 
-    // Hitung Slicing Paginasi
     const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
     const paginatedUsers = filteredUsers.slice(startIndex, startIndex + itemsPerPage);
@@ -96,6 +182,97 @@ export default function UsersIndex({ users = [] }) { // <-- Berikan default valu
     return (
         <div onClick={closeDropdown} className="min-h-full space-y-6">
             <Head title="Manajemen Pengguna - SIVALDEN" />
+
+            {/* TOAST ALERT: sederhana, ringkas, dan berada di tengah atas */}
+            {mounted && toast && createPortal(
+                <>
+                    <style>{`
+                        @keyframes sivalden-toast-progress {
+                            from { width: 100%; }
+                            to { width: 0%; }
+                        }
+                        @keyframes sivalden-toast-loading {
+                            from { transform: translateX(-110%); }
+                            to { transform: translateX(280%); }
+                        }
+                    `}</style>
+
+                    <div
+                        key={toast.id}
+                        role={toast.type === 'error' ? 'alert' : 'status'}
+                        aria-live={toast.type === 'error' ? 'assertive' : 'polite'}
+                        className={`fixed left-1/2 top-4 z-[10000] w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 overflow-hidden rounded-lg border border-[#E5E7EB] border-l-4 bg-white shadow-md ${
+                            toast.type === 'error'
+                                ? 'border-l-[#D92020]'
+                                : toast.type === 'loading'
+                                    ? 'border-l-[#8B0F14]'
+                                    : 'border-l-[#1E8E3E]'
+                        }`}
+                    >
+                        <div className="flex items-center gap-2.5 px-3.5 py-3">
+                            <div className={`shrink-0 ${
+                                toast.type === 'error'
+                                    ? 'text-[#D92020]'
+                                    : toast.type === 'loading'
+                                        ? 'text-[#8B0F14]'
+                                        : 'text-[#1E8E3E]'
+                            }`}>
+                                {toast.type === 'loading' ? (
+                                    <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <circle className="opacity-25" cx="12" cy="12" r="9" strokeWidth="3" />
+                                        <path className="opacity-75" strokeLinecap="round" strokeWidth="3" d="M21 12a9 9 0 00-9-9" />
+                                    </svg>
+                                ) : toast.type === 'error' ? (
+                                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                ) : (
+                                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                )}
+                            </div>
+
+                            <div className="min-w-0 flex-1 text-sm leading-snug text-[#262626]">
+                                <span className="mr-1.5 font-semibold">
+                                    {toast.type === 'error'
+                                        ? 'Gagal.'
+                                        : toast.type === 'loading'
+                                            ? 'Memproses.'
+                                            : 'Berhasil.'}
+                                </span>
+                                <span className="break-words text-[#525252]">{toast.message}</span>
+                            </div>
+
+                            <button
+                                type="button"
+                                onClick={() => setToast(null)}
+                                aria-label="Tutup notifikasi"
+                                className="shrink-0 rounded p-1 text-[#9CA3AF] transition hover:bg-[#F3F4F6] hover:text-[#262626]"
+                            >
+                                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div className="h-0.5 w-full overflow-hidden bg-[#F3F4F6]">
+                            {toast.type === 'loading' ? (
+                                <div
+                                    className="h-full w-2/5 bg-[#8B0F14]"
+                                    style={{ animation: 'sivalden-toast-loading 1.2s ease-in-out infinite' }}
+                                />
+                            ) : (
+                                <div
+                                    className={`h-full ${toast.type === 'error' ? 'bg-[#D92020]' : 'bg-[#1E8E3E]'}`}
+                                    style={{ animation: 'sivalden-toast-progress 4500ms linear forwards' }}
+                                />
+                            )}
+                        </div>
+                    </div>
+                </>,
+                document.body
+            )}
 
             {/* HEADER PAGE & TOMBOL TAMBAH */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -111,22 +288,22 @@ export default function UsersIndex({ users = [] }) { // <-- Berikan default valu
                     </p>
                 </div>
 
-                <Link
-                    href="/superadmin/users/create"
+                <button
+                    type="button"
+                    onClick={handleCreateUser}
                     className="inline-flex items-center gap-2 rounded-[8px] bg-[#8B0F14] px-5 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-[#6B0A0F] active:scale-95 shrink-0"
                 >
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                     </svg>
                     Tambah User Baru
-                </Link>
+                </button>
             </div>
 
             {/* CARD MANAJEMEN TABEL */}
             <div className="rounded-xl border border-[#E5E7EB] bg-white shadow-sm">
                 {/* TAB SWITCHER & SEARCH BAR */}
                 <div className="flex flex-col gap-4 border-b border-[#E5E7EB] p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-                    {/* Tab Navigation */}
                     <div className="flex gap-2">
                         <button
                             onClick={() => setActiveTab('active')}
@@ -169,7 +346,6 @@ export default function UsersIndex({ users = [] }) { // <-- Berikan default valu
                         </button>
                     </div>
 
-                    {/* Search Input Box */}
                     <div className="relative w-full sm:w-80">
                         <input
                             type="text"
@@ -358,15 +534,15 @@ export default function UsersIndex({ users = [] }) { // <-- Berikan default valu
                                     Lihat Profil
                                 </button>
 
-                                <Link
-                                    href={`/superadmin/users/${u.id}/edit`}
+                                <button
+                                    onClick={() => handleEditUser(u)}
                                     className="flex w-full items-center gap-2.5 px-4 py-2 text-xs font-medium text-[#262626] transition hover:bg-[#F5F5F5] hover:text-[#8B0F14]"
                                 >
                                     <svg className="h-4 w-4 text-[#7F8C8D]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                     </svg>
                                     Edit Profil
-                                </Link>
+                                </button>
 
                                 <hr className="my-1 border-[#E5E7EB]" />
 
@@ -397,9 +573,18 @@ export default function UsersIndex({ users = [] }) { // <-- Berikan default valu
                 </div>
             )}
 
-            {/* MODAL DETAIL PROFIL */}
-            {showDetailModal && selectedUser && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm transition-opacity">
+            {/* MODAL FORM CREATE & EDIT */}
+            <CreateEditModal
+                show={showFormModal}
+                onClose={() => setShowFormModal(false)}
+                user={selectedUser}
+                rolesList={rolesList}
+                bidangList={bidangList}
+            />
+
+            {/* MODAL DETAIL PROFIL (PORTAL LENGKAP) */}
+            {mounted && showDetailModal && selectedUser && createPortal(
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm transition-opacity">
                     <div
                         className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl transition-all sm:p-7"
                         onClick={(e) => e.stopPropagation()}
@@ -469,12 +654,13 @@ export default function UsersIndex({ users = [] }) { // <-- Berikan default valu
                             </button>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
 
-            {/* MODAL KONFIRMASI */}
-            {showDeleteModal && selectedUser && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm transition-opacity">
+            {/* MODAL KONFIRMASI (PORTAL LENGKAP) */}
+            {mounted && showDeleteModal && selectedUser && createPortal(
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm transition-opacity">
                     <div
                         className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl transition-all sm:p-7"
                         onClick={(e) => e.stopPropagation()}
@@ -512,7 +698,8 @@ export default function UsersIndex({ users = [] }) { // <-- Berikan default valu
                             </button>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     );

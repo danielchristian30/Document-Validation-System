@@ -34,6 +34,7 @@ class UserManagementController extends Controller
 
         return Inertia::render('Superadmin/Users/Index', [
             'users' => $query->latest()->get(),
+            'rolesList' => config('access.roles'),
             'bidangList' => config('access.bidang'),
             'currentUserRole' => 'superadmin',
             'selectedBidang' => $request->bidang,
@@ -135,41 +136,41 @@ class UserManagementController extends Controller
  * Menggunakan soft delete berbasis periode waktu, bukan menghapus data secara permanen secara langsung.
  */
     public function destroy(Request $request, User $user)
-    {
-        abort_unless(
-            $request->user()->role === 'superadmin',
-            403,
-            'Akses hanya untuk superadmin.'
-        );
+        {
+            abort_unless(
+                $request->user()->role === 'superadmin',
+                403,
+                'Akses hanya untuk superadmin.'
+            );
 
-        if ($request->user()->id === $user->id) {
+            if ((string) $request->user()->id === (string) $user->id) {
+                return back()->with(
+                    'error',
+                    'Anda tidak dapat menonaktifkan akun sendiri.'
+                );
+            }
+
+            if ($user->role === 'superadmin') {
+                return back()->with(
+                    'error',
+                    'Akun Superadmin tidak bisa dinonaktifkan.'
+                );
+            }
+
+            $newActiveState = !(bool) $user->is_active;
+
+            $user->update([
+                'is_active' => $newActiveState,
+                'deactivated_at' => $newActiveState ? null : now(),
+            ]);
+
             return back()->with(
-                'error',
-                'Anda tidak dapat mengubah status akun sendiri.'
+                'success',
+                $newActiveState
+                    ? 'Akun berhasil diaktifkan kembali.'
+                    : 'Akun berhasil dinonaktifkan.'
             );
         }
-
-        if ($user->role === 'superadmin') {
-            return back()->with(
-                'error',
-                'Akun superadmin tidak dapat dinonaktifkan.'
-            );
-        }
-
-        $newActiveState = !(bool) $user->is_active;
-
-        $user->update([
-            'is_active' => $newActiveState,
-            'deactivated_at' => $newActiveState ? null : now(),
-        ]);
-
-        return back()->with(
-            'success',
-            $newActiveState
-                ? 'Akun berhasil diaktifkan kembali.'
-                : 'Akun berhasil dinonaktifkan.'
-        );
-    }
 
 }
 
