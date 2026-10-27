@@ -93,13 +93,13 @@ export default function CreateEditModal({
 
     const modalContent = (
         <div
-            className="fixed inset-0 z-[9999] flex items-center justify-center overflow-y-auto bg-black/40 p-4 backdrop-blur-sm"
+            className="fixed inset-0 z-[9999] flex items-start justify-center overflow-y-auto bg-black/40 p-2 backdrop-blur-sm sm:items-center sm:p-4"
             onClick={(e) => {
                 if (e.target === e.currentTarget) closeModal();
             }}
         >
             <div
-                className="relative my-auto w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl sm:p-7"
+                className="relative my-auto max-h-[calc(100dvh-1rem)] w-full max-w-lg overflow-y-auto overscroll-contain rounded-2xl bg-white p-4 shadow-2xl sm:max-h-[calc(100dvh-2rem)] sm:p-7"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* HEADER */}
@@ -230,7 +230,7 @@ export default function CreateEditModal({
                     </div>
 
                     {/* ROLE DAN BIDANG */}
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-4 min-[440px]:grid-cols-2">
                         <div>
                             <label className={labelClass}>
                                 Role (Peran) <span className="text-[#D92020]">*</span>
@@ -345,12 +345,12 @@ export default function CreateEditModal({
                     </div>
 
                     {/* FOOTER */}
-                    <div className="mt-6 flex items-center justify-end gap-3 border-t border-[#E5E7EB] pt-4">
+                    <div className="mt-6 flex flex-col-reverse gap-2 border-t border-[#E5E7EB] pt-4 sm:flex-row sm:items-center sm:justify-end sm:gap-3">
                         <button
                             type="button"
                             onClick={closeModal}
                             disabled={processing}
-                            className="rounded-[8px] border border-[#E5E7EB] bg-white px-4 py-2 text-xs font-semibold text-[#262626] transition hover:bg-[#F5F5F5] disabled:opacity-50"
+                            className="w-full rounded-[8px] border border-[#E5E7EB] bg-white px-4 py-2.5 text-xs font-semibold text-[#262626] transition hover:bg-[#F5F5F5] disabled:opacity-50 sm:w-auto sm:py-2"
                         >
                             Batal
                         </button>
@@ -358,7 +358,7 @@ export default function CreateEditModal({
                         <button
                             type="submit"
                             disabled={processing}
-                            className="rounded-[8px] bg-[#8B0F14] px-5 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-[#6B0A0F] active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
+                            className="w-full rounded-[8px] bg-[#8B0F14] px-5 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-[#6B0A0F] active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:py-2"
                         >
                             {processing
                                 ? 'Menyimpan...'

@@ -55,7 +55,10 @@ class UserManagementController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'max:15'],
             'email' => [
-                'required', 'email', 'max:255',
+                'required',
+                'email',
+                'max:255',
+                'ends_with:@denpasarkota.com',
                 'unique:users,email',
                 'ends_with:@denpasarkota.com',
             ],
@@ -106,7 +109,10 @@ class UserManagementController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'max:15'],
             'email' => [
-                'required', 'email', 'max:255',
+                'required',
+                'email',
+                'max:255',
+                'ends_with:@denpasarkota.com',
                 Rule::unique('users', 'email')->ignore($user->id),
                 'ends_with:@denpasarkota.com',
             ],
