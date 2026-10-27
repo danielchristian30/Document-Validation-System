@@ -80,8 +80,8 @@ export default function UsersIndex({
         } else {
             const rect = e.currentTarget.getBoundingClientRect();
             setDropdownPos({
-                top: rect.bottom + 4,
-                left: Math.max(16, rect.right - 192),
+                top: Math.min(rect.bottom + 4, Math.max(12, window.innerHeight - 240)),
+                left: Math.min(Math.max(16, rect.right - 192), Math.max(16, window.innerWidth - 208)),
             });
             setActiveDropdown(id);
         }
@@ -180,7 +180,7 @@ export default function UsersIndex({
     const paginatedUsers = filteredUsers.slice(startIndex, startIndex + itemsPerPage);
 
     return (
-        <div onClick={closeDropdown} className="min-h-full space-y-6">
+        <div onClick={closeDropdown} className="min-h-full w-full min-w-0 space-y-5 sm:space-y-6">
             <Head title="Manajemen Pengguna - SIVALDEN" />
 
             {/* TOAST ALERT: sederhana, ringkas, dan berada di tengah atas */}
@@ -275,7 +275,7 @@ export default function UsersIndex({
             )}
 
             {/* HEADER PAGE & TOMBOL TAMBAH */}
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                     <span className="rounded-full bg-[#FCEBEC] px-3.5 py-1 text-xs font-semibold text-[#8B0F14]">
                         Modul Superadmin
@@ -283,7 +283,7 @@ export default function UsersIndex({
                     <h1 className="mt-2 font-montserrat text-2xl font-extrabold text-[#262626] sm:text-3xl">
                         Manajemen Pengguna
                     </h1>
-                    <p className="mt-1 text-sm text-[#7F8C8D]">
+                    <p className="mt-1 max-w-3xl text-sm leading-6 text-[#7F8C8D]">
                         Kelola akun Admin dan Pegawai operasional berdasarkan peran dan bidang, pantau hak akses, serta nonaktifkan akun terindikasi retas.
                     </p>
                 </div>
@@ -291,7 +291,7 @@ export default function UsersIndex({
                 <button
                     type="button"
                     onClick={handleCreateUser}
-                    className="inline-flex items-center gap-2 rounded-[8px] bg-[#8B0F14] px-5 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-[#6B0A0F] active:scale-95 shrink-0"
+                    className="inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-[8px] bg-[#8B0F14] px-5 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-[#6B0A0F] active:scale-95 sm:w-auto"
                 >
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -303,11 +303,11 @@ export default function UsersIndex({
             {/* CARD MANAJEMEN TABEL */}
             <div className="rounded-xl border border-[#E5E7EB] bg-white shadow-sm">
                 {/* TAB SWITCHER & SEARCH BAR */}
-                <div className="flex flex-col gap-4 border-b border-[#E5E7EB] p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-                    <div className="flex gap-2">
+                <div className="flex min-w-0 flex-col gap-4 border-b border-[#E5E7EB] p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+                    <div className="grid min-w-0 grid-cols-2 gap-2 min-[480px]:flex">
                         <button
                             onClick={() => setActiveTab('active')}
-                            className={`flex items-center gap-2 rounded-[8px] px-4 py-2 text-xs font-bold transition ${
+                            className={`flex w-full items-center justify-center gap-2 rounded-[8px] px-3 py-2 text-xs font-bold transition min-[480px]:w-auto min-[480px]:px-4 ${
                                 activeTab === 'active'
                                     ? 'bg-[#1E8E3E] text-white shadow-sm'
                                     : 'bg-[#F5F5F5] text-[#7F8C8D] hover:bg-[#E5E7EB] hover:text-[#262626]'
@@ -327,7 +327,7 @@ export default function UsersIndex({
 
                         <button
                             onClick={() => setActiveTab('inactive')}
-                            className={`flex items-center gap-2 rounded-[8px] px-4 py-2 text-xs font-bold transition ${
+                            className={`flex w-full items-center justify-center gap-2 rounded-[8px] px-3 py-2 text-xs font-bold transition min-[480px]:w-auto min-[480px]:px-4 ${
                                 activeTab === 'inactive'
                                     ? 'bg-[#D92020] text-white shadow-sm'
                                     : 'bg-[#F5F5F5] text-[#7F8C8D] hover:bg-[#E5E7EB] hover:text-[#262626]'
@@ -346,13 +346,13 @@ export default function UsersIndex({
                         </button>
                     </div>
 
-                    <div className="relative w-full sm:w-80">
+                    <div className="relative w-full min-w-0 sm:w-80 sm:shrink-0">
                         <input
                             type="text"
                             placeholder="Cari nama, email, role, atau bidang..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full rounded-[8px] border border-[#E5E7EB] bg-[#F5F5F5] pl-9 pr-4 py-2 text-xs text-[#262626] focus:border-[#8B0F14] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#8B0F14]"
+                            className="w-full rounded-[8px] border border-[#E5E7EB] bg-[#F5F5F5] py-2 pl-9 pr-3 text-xs text-[#262626] focus:border-[#8B0F14] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#8B0F14]"
                         />
                         <svg
                             className="absolute left-3 top-2.5 h-4 w-4 text-[#7F8C8D]"
@@ -365,9 +365,68 @@ export default function UsersIndex({
                     </div>
                 </div>
 
-                {/* TABEL DATA PENGGUNA */}
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs font-dmsans">
+                {/* MOBILE USER CARDS: lebih nyaman daripada tabel lebar pada layar kecil */}
+                <div className="divide-y divide-[#E5E7EB] md:hidden">
+                    {paginatedUsers.length > 0 ? (
+                        paginatedUsers.map((u) => (
+                            <article key={u.id} className="space-y-3 p-4">
+                                <div className="flex min-w-0 items-start justify-between gap-3">
+                                    <div className="flex min-w-0 items-center gap-3">
+                                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#8B0F14] font-montserrat font-bold text-white">
+                                            {u.name ? u.name.charAt(0) : 'U'}
+                                        </div>
+                                        <div className="min-w-0">
+                                            <p className="break-words font-montserrat text-sm font-bold text-[#262626]">{u.name}</p>
+                                            <p className="mt-0.5 break-all text-[11px] text-[#7F8C8D]">{u.email}</p>
+                                        </div>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        aria-label={`Aksi untuk ${u.name}`}
+                                        onClick={(e) => toggleDropdown(u.id, e)}
+                                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#E5E7EB] text-[#7F8C8D] transition hover:bg-[#F5F5F5] hover:text-[#262626]"
+                                    >
+                                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                                        </svg>
+                                    </button>
+                                </div>
+
+                                <div className="flex flex-wrap gap-2">
+                                    <span className="inline-flex max-w-full break-words rounded-md bg-[#8B0F14]/10 px-2.5 py-1 text-[10px] font-semibold uppercase text-[#8B0F14]">{u.role}</span>
+                                    <span className="inline-flex max-w-full break-words rounded-md bg-[#F5F5F5] px-2.5 py-1 text-[10px] font-medium uppercase text-[#262626]">{u.bidang || '-'}</span>
+                                </div>
+
+                                <dl className="grid grid-cols-2 gap-3 rounded-lg bg-[#F9FAFB] p-3 text-xs">
+                                    <div className="min-w-0">
+                                        <dt className="text-[10px] text-[#7F8C8D]">Status</dt>
+                                        <dd className={`mt-1 inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-semibold ${u.is_active ? 'bg-[#1E8E3E]/10 text-[#1E8E3E]' : 'bg-[#D92020]/10 text-[#D92020]'}`}>
+                                            <span className={`h-1.5 w-1.5 rounded-full ${u.is_active ? 'bg-[#1E8E3E]' : 'bg-[#D92020]'}`} />
+                                            {u.is_active ? 'Aktif' : 'Nonaktif'}
+                                        </dd>
+                                    </div>
+                                    <div className="min-w-0">
+                                        <dt className="text-[10px] text-[#7F8C8D]">{activeTab === 'active' ? 'Waktu Dibuat' : 'Waktu Dinonaktifkan'}</dt>
+                                        <dd className="mt-1 break-words text-[11px] leading-4 text-[#525252]">
+                                            {activeTab === 'active'
+                                                ? (u.created_at ? new Date(u.created_at).toLocaleString('id-ID') : '-')
+                                                : (u.deactivated_at ? new Date(u.deactivated_at).toLocaleString('id-ID') : '-')}
+                                        </dd>
+                                    </div>
+                                </dl>
+                            </article>
+                        ))
+                    ) : (
+                        <div className="px-4 py-10 text-center">
+                            <p className="text-sm font-semibold text-[#262626]">Tidak ada data pengguna</p>
+                            <p className="mt-1 text-xs text-[#7F8C8D]">Coba ubah kata kunci atau tab yang dipilih.</p>
+                        </div>
+                    )}
+                </div>
+
+                {/* DESKTOP/TABLET TABLE */}
+                <div className="hidden overflow-x-auto md:block">
+                    <table className="w-full min-w-[760px] text-left text-xs font-dmsans">
                         <thead className="bg-[#F5F5F5] font-montserrat text-[11px] font-bold uppercase tracking-wider text-[#7F8C8D]">
                             <tr>
                                 <th className="px-6 py-3.5">Nama</th>
@@ -477,7 +536,8 @@ export default function UsersIndex({
                     </p>
 
                     {totalPages > 1 && (
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex flex-wrap items-center justify-between gap-1.5 sm:justify-end">
+                            <span className="px-1 text-xs text-[#7F8C8D] sm:hidden">Halaman {currentPage} / {totalPages}</span>
                             <button
                                 onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                                 disabled={currentPage === 1}
@@ -490,7 +550,7 @@ export default function UsersIndex({
                                 <button
                                     key={page}
                                     onClick={() => setCurrentPage(page)}
-                                    className={`h-8 min-w-[32px] rounded-lg text-xs font-semibold transition ${
+                                    className={`hidden h-8 min-w-[32px] rounded-lg text-xs font-semibold transition sm:inline-flex sm:items-center sm:justify-center ${
                                         currentPage === page
                                             ? 'bg-[#8B0F14] text-white shadow-sm'
                                             : 'border border-[#E5E7EB] bg-white text-[#262626] hover:bg-[#F5F5F5]'
@@ -584,9 +644,9 @@ export default function UsersIndex({
 
             {/* MODAL DETAIL PROFIL (PORTAL LENGKAP) */}
             {mounted && showDetailModal && selectedUser && createPortal(
-                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm transition-opacity">
+                <div className="fixed inset-0 z-[9999] flex items-start justify-center overflow-y-auto bg-black/40 p-2 backdrop-blur-sm transition-opacity sm:items-center sm:p-4">
                     <div
-                        className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl transition-all sm:p-7"
+                        className="relative my-auto max-h-[calc(100dvh-1rem)] w-full max-w-md overflow-y-auto overscroll-contain rounded-2xl bg-white p-4 shadow-2xl transition-all sm:max-h-[calc(100dvh-2rem)] sm:p-7"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <button
@@ -611,34 +671,34 @@ export default function UsersIndex({
                         </div>
 
                         <div className="mt-6 space-y-3 rounded-xl bg-[#F8F9FA] p-4 text-xs border border-[#E5E7EB]/60">
-                            <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-2.5">
+                            <div className="flex flex-col gap-1 border-b border-[#E5E7EB] pb-2.5 sm:flex-row sm:items-center sm:justify-between">
                                 <span className="text-[#7F8C8D]">Nama Lengkap:</span>
                                 <span className="font-semibold text-[#262626]">{selectedUser.name}</span>
                             </div>
-                            <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-2.5">
+                            <div className="flex flex-col gap-1 border-b border-[#E5E7EB] pb-2.5 sm:flex-row sm:items-center sm:justify-between">
                                 <span className="text-[#7F8C8D]">Email:</span>
-                                <span className="font-medium text-[#262626]">{selectedUser.email}</span>
+                                <span className="break-all font-medium text-[#262626] sm:text-right">{selectedUser.email}</span>
                             </div>
-                            <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-2.5">
+                            <div className="flex flex-col gap-1 border-b border-[#E5E7EB] pb-2.5 sm:flex-row sm:items-center sm:justify-between">
                                 <span className="text-[#7F8C8D]">Role (Peran):</span>
                                 <span className="font-bold text-[#8B0F14] uppercase">{selectedUser.role}</span>
                             </div>
-                            <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-2.5">
+                            <div className="flex flex-col gap-1 border-b border-[#E5E7EB] pb-2.5 sm:flex-row sm:items-center sm:justify-between">
                                 <span className="text-[#7F8C8D]">Bidang:</span>
                                 <span className="font-semibold text-[#262626] uppercase">{selectedUser.bidang || '-'}</span>
                             </div>
-                            <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-2.5">
+                            <div className="flex flex-col gap-1 border-b border-[#E5E7EB] pb-2.5 sm:flex-row sm:items-center sm:justify-between">
                                 <span className="text-[#7F8C8D]">Status Akun:</span>
                                 <span className={`font-bold ${selectedUser.is_active ? 'text-[#1E8E3E]' : 'text-[#D92020]'}`}>
                                     {selectedUser.is_active ? 'Aktif' : 'Nonaktif'}
                                 </span>
                             </div>
-                            <div className="flex items-center justify-between">
+                            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                                 <span className="text-[#7F8C8D]">Waktu Dibuat:</span>
                                 <span className="font-mono text-[#262626]">{new Date(selectedUser.created_at).toLocaleString('id-ID')}</span>
                             </div>
                             {!selectedUser.is_active && selectedUser.deactivated_at && (
-                                <div className="flex items-center justify-between border-t border-[#E5E7EB] pt-2.5">
+                                <div className="flex flex-col gap-1 border-t border-[#E5E7EB] pt-2.5 sm:flex-row sm:items-center sm:justify-between">
                                     <span className="text-[#7F8C8D]">Dinonaktifkan Pada:</span>
                                     <span className="font-mono font-semibold text-[#D92020]">{new Date(selectedUser.deactivated_at).toLocaleString('id-ID')}</span>
                                 </div>
@@ -660,9 +720,9 @@ export default function UsersIndex({
 
             {/* MODAL KONFIRMASI (PORTAL LENGKAP) */}
             {mounted && showDeleteModal && selectedUser && createPortal(
-                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm transition-opacity">
+                <div className="fixed inset-0 z-[9999] flex items-start justify-center overflow-y-auto bg-black/40 p-2 backdrop-blur-sm transition-opacity sm:items-center sm:p-4">
                     <div
-                        className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl transition-all sm:p-7"
+                        className="relative my-auto max-h-[calc(100dvh-1rem)] w-full max-w-md overflow-y-auto overscroll-contain rounded-2xl bg-white p-4 shadow-2xl transition-all sm:max-h-[calc(100dvh-2rem)] sm:p-7"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="flex items-start gap-4">
@@ -683,16 +743,16 @@ export default function UsersIndex({
                             </div>
                         </div>
 
-                        <div className="mt-6 flex justify-end gap-3 border-t border-[#E5E7EB] pt-4">
+                        <div className="mt-6 flex flex-col-reverse gap-2 border-t border-[#E5E7EB] pt-4 sm:flex-row sm:justify-end sm:gap-3">
                             <button
                                 onClick={() => setShowDeleteModal(false)}
-                                className="rounded-[8px] border border-[#E5E7EB] bg-white px-4 py-2 text-xs font-semibold text-[#262626] hover:bg-[#F5F5F5] transition"
+                                className="w-full rounded-[8px] border border-[#E5E7EB] bg-white px-4 py-2.5 text-xs font-semibold text-[#262626] transition hover:bg-[#F5F5F5] sm:w-auto"
                             >
                                 Batal
                             </button>
                             <button
                                 onClick={handleConfirmDeactivate}
-                                className={`rounded-[8px] px-4 py-2 text-xs font-semibold text-white transition ${selectedUser.is_active ? 'bg-[#D92020] hover:bg-[#B51A1A]' : 'bg-[#1E8E3E] hover:bg-[#166E2E]'}`}
+                                className={`w-full rounded-[8px] px-4 py-2.5 text-xs font-semibold text-white transition sm:w-auto ${selectedUser.is_active ? 'bg-[#D92020] hover:bg-[#B51A1A]' : 'bg-[#1E8E3E] hover:bg-[#166E2E]'}`}
                             >
                                 {selectedUser.is_active ? 'Ya, Nonaktifkan' : 'Ya, Aktifkan'}
                             </button>

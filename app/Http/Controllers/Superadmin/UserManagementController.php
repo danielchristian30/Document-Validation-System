@@ -51,8 +51,12 @@ class UserManagementController extends Controller
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
+            'username' => ['required', 'string', 'max:15'],
             'email' => [
-                'required', 'email', 'max:255',
+                'required',
+                'email',
+                'max:255',
+                'ends_with:@denpasarkota.com',
                 'unique:users,email',
             ],
             'password' => ['required', 'string', 'min:8'],
@@ -68,6 +72,7 @@ class UserManagementController extends Controller
 
         User::create([
             'name' => $validated['name'],
+            'username' => $validated['username'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
             'role' => $validated['role'],
@@ -97,8 +102,12 @@ class UserManagementController extends Controller
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
+            'username' => ['required', 'string', 'max:15'],
             'email' => [
-                'required', 'email', 'max:255',
+                'required',
+                'email',
+                'max:255',
+                'ends_with:@denpasarkota.com',
                 Rule::unique('users', 'email')->ignore($user->id),
             ],
             'password' => [
