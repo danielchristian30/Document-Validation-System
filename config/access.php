@@ -33,4 +33,17 @@ return [
         'PIKP',
         'Sekretariat',
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | whitelist email superadmin
+    |--------------------------------------------------------------------------
+    |
+    | email superadmin yang sah
+    | 
+    */
+
+    'superadmin_emails' => [
+        'superadmin@denpasarkota.com',
+    ]
 ];

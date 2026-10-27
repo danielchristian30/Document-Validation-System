@@ -19,7 +19,7 @@ Route::get('/', function () {
     ]);
 });
     
-// Routing berdasarkan Role
+// Routing dashboard berdasarkan Role
 Route::get('/dashboard', function (Request $request) {
     $role = $request->user()->role;      
     return match($role) {
@@ -28,10 +28,10 @@ Route::get('/dashboard', function (Request $request) {
         'employee'      => redirect()->route('employee.dashboard'),
         default         => abort(403, 'Role tidak terdaftar'),
     };
-})->middleware(['auth'])->name('dashboard');
+})->middleware(['auth', 'superadmin.whitelist'])->name('dashboard');
 
 // Route Superadmin
-Route::middleware(['auth', 'role:superadmin'])->group(function () {
+Route::middleware(['auth', 'role:superadmin', 'superadmin.whitelist'])->group(function () {
     Route::get('/superadmin/dashboard', [SuperadminDashboardController::class, 'index'])->name('superadmin.dashboard');
 
     // UserManagement Controller
@@ -52,7 +52,7 @@ Route::middleware(['auth', 'role:employee'])->group(function () {
     Route::get('/employee/dashboard', [EmployeeDashboardController::class, 'index'])->name('employee.dashboard');
 });
 
-Route::middleware('auth')->group(function () {
+Route::middleware('auth', 'superadmin.whitelist')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

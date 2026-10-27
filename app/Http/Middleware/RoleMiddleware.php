@@ -19,7 +19,7 @@ class RoleMiddleware
             return redirect()->route('login');
         }
 
-        if(! in_array($request->user()->role, $roles)) {
+        if(! in_array($request->user()->role, $roles, true)) {
             abort(403, 'Akses ditolak. Anda tidak memiliki hak untuk membuka halaman ini.');
         } 
         

@@ -8,16 +8,18 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use App\Http\Controllers\Controller;
 use Inertia\Inertia;
+use Illuminate\Support\Str;
+use Symfony\Component\Console\Input\Input;
 
 class UserManagementController extends Controller
 {
     public function index(Request $request)
     {
-        abort_unless(
-            $request->user()->role === 'superadmin',
-            403,
-            'Akses hanya untuk superadmin.'
-        );
+        // abort_unless(
+        //    $this->isAuthorizedSuperadmin($request->user()),
+        //     403,
+        //     'Akses ditolak: Akun tidak terdaftar sebagai superadmin secara sah.'
+        // );
 
         $request->validate([
             'bidang' => [
@@ -43,17 +45,19 @@ class UserManagementController extends Controller
 
     public function store(Request $request)
     {
-        abort_unless(
-            $request->user()->role === 'superadmin',
-            403,
-            'Akses hanya untuk superadmin.'
-        );
+        // abort_unless(
+        //    $this->isAuthorizedSuperadmin($request->user()),
+        //     403,
+        //     'Akses ditolak: Akun tidak terdaftar sebagai superadmin secara sah.'
+        // );
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
+            'username' => ['required', 'string', 'max:15'],
             'email' => [
                 'required', 'email', 'max:255',
                 'unique:users,email',
+                'ends_with:@denpasarkota.com',
             ],
             'password' => ['required', 'string', 'min:8'],
             'role' => [
@@ -66,8 +70,11 @@ class UserManagementController extends Controller
             ],
         ]);
 
+        $validated['username'] = Str::lower($validated['username']);
+
         User::create([
             'name' => $validated['name'],
+            'username' => $validated['username'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
             'role' => $validated['role'],
@@ -81,11 +88,11 @@ class UserManagementController extends Controller
     
     public function update(Request $request, User $user)
     {
-        abort_unless(
-            $request->user()->role === 'superadmin',
-            403,
-            'Akses hanya untuk superadmin.'
-        );
+        // abort_unless(
+        //    $this->isAuthorizedSuperadmin($request->user()),
+        //     403,
+        //     'Akses ditolak: Akun tidak terdaftar sebagai superadmin secara sah.'
+        // );
 
         // Lindungi akun superadmin dari perubahan melalui fitur ini.
         if ($user->role === 'superadmin') {
@@ -97,9 +104,11 @@ class UserManagementController extends Controller
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
+            'username' => ['required', 'string', 'max:15'],
             'email' => [
                 'required', 'email', 'max:255',
                 Rule::unique('users', 'email')->ignore($user->id),
+                'ends_with:@denpasarkota.com',
             ],
             'password' => [
                 'nullable', 'string', 'min:8', 'confirmed',
@@ -114,8 +123,11 @@ class UserManagementController extends Controller
             ],
         ]);
 
+        $validated['username'] = Str::lower($validated['username']);
+        
         $data = [
             'name' => $validated['name'],
+            'username' => $validated['username'],
             'email' => $validated['email'],
             'role' => $validated['role'],
             'bidang' => $validated['bidang'],
@@ -137,11 +149,11 @@ class UserManagementController extends Controller
  */
     public function destroy(Request $request, User $user)
         {
-            abort_unless(
-                $request->user()->role === 'superadmin',
-                403,
-                'Akses hanya untuk superadmin.'
-            );
+            // abort_unless(
+            //     $this->isAuthorizedSuperadmin($request->user()),
+            //         403,
+            //         'Akses ditolak: Akun tidak terdaftar sebagai superadmin secara sah.'
+            // );
 
             if ((string) $request->user()->id === (string) $user->id) {
                 return back()->with(

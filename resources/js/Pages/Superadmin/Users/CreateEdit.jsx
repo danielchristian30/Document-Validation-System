@@ -1,7 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useForm } from '@inertiajs/react';
+
+const EMAIL_DOMAIN = '@denpasarkota.com';
 
 export default function CreateEditModal({
     show,
@@ -23,6 +24,7 @@ export default function CreateEditModal({
         clearErrors,
     } = useForm({
         name: '',
+        username: '',
         email: '',
         role: '',
         bidang: '',
@@ -36,7 +38,7 @@ export default function CreateEditModal({
         setMounted(true);
     }, []);
 
-    // Isi ulang form setiap kali modal dibuka atau target user berubah.
+    // Isi form saat modal dibuka atau pengguna yang dipilih berubah.
     useEffect(() => {
         if (!show) return;
 
@@ -44,7 +46,8 @@ export default function CreateEditModal({
 
         setData({
             name: user?.name || '',
-            email: user?.email || '',
+            username: user?.username || '',
+            email: user?.email ? `${user.email.split('@')[0]}${EMAIL_DOMAIN}` : '',
             role: user?.role || '',
             bidang: user?.bidang || '',
             password: '',
@@ -55,6 +58,8 @@ export default function CreateEditModal({
     if (!show || !mounted) return null;
 
     const closeModal = () => {
+        if (processing) return;
+
         clearErrors();
         onClose();
     };
@@ -89,7 +94,9 @@ export default function CreateEditModal({
     const modalContent = (
         <div
             className="fixed inset-0 z-[9999] flex items-center justify-center overflow-y-auto bg-black/40 p-4 backdrop-blur-sm"
-            onClick={closeModal}
+            onClick={(e) => {
+                if (e.target === e.currentTarget) closeModal();
+            }}
         >
             <div
                 className="relative my-auto w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl sm:p-7"
@@ -114,7 +121,8 @@ export default function CreateEditModal({
                     <button
                         type="button"
                         onClick={closeModal}
-                        className="rounded-lg p-1.5 text-[#7F8C8D] transition hover:bg-[#F5F5F5] hover:text-[#262626]"
+                        disabled={processing}
+                        className="rounded-lg p-1.5 text-[#7F8C8D] transition hover:bg-[#F5F5F5] hover:text-[#262626] disabled:opacity-50"
                         aria-label="Tutup modal"
                     >
                         <svg
@@ -157,22 +165,64 @@ export default function CreateEditModal({
                         )}
                     </div>
 
+                    {/* USERNAME */}
+                    <div>
+                        <label className={labelClass}>
+                            Username <span className="text-[#D92020]">*</span>
+                        </label>
+
+                        <input
+                            type="text"
+                            name="username"
+                            value={data.username}
+                            onChange={(e) => setData('username', e.target.value)}
+                            placeholder="Masukkan username"
+                            autoComplete="username"
+                            required
+                            className={inputClass}
+                        />
+
+                        {errors.username && (
+                            <p className={errorClass}>{errors.username}</p>
+                        )}
+                    </div>
+
                     {/* EMAIL */}
                     <div>
                         <label className={labelClass}>
                             Alamat Email <span className="text-[#D92020]">*</span>
                         </label>
 
-                        <input
-                            type="email"
-                            name="email"
-                            value={data.email}
-                            onChange={(e) => setData('email', e.target.value)}
-                            placeholder="nama@denpasarkota.go.id"
-                            autoComplete="email"
-                            required
-                            className={inputClass}
-                        />
+                        <div className="flex w-full">
+                            <input
+                                type="text"
+                                name="email"
+                                value={data.email
+                                    .split('@')[0]
+                                    .replace(/@/g, '')}
+                                onChange={(e) => {
+                                    const emailPrefix = e.target.value
+                                        .split('@')[0]
+                                        .trim();
+
+                                    setData(
+                                        'email',
+                                        emailPrefix
+                                            ? `${emailPrefix}${EMAIL_DOMAIN}`
+                                            : ''
+                                    );
+                                }}
+                                placeholder="Masukkan nama email"
+                                autoComplete="off"
+                                required
+                                aria-label="Nama email"
+                                className="w-full min-w-0 rounded-l-[8px] rounded-r-none border border-[#E5E7EB] bg-white px-3.5 py-2 text-xs text-[#262626] placeholder-[#7F8C8D] transition focus:z-10 focus:border-[#8B0F14] focus:outline-none focus:ring-1 focus:ring-[#8B0F14]"
+                            />
+
+                            <span className="inline-flex shrink-0 items-center rounded-r-[8px] border border-l-0 border-[#E5E7EB] bg-[#F9FAFB] px-3 text-xs text-[#626262]">
+                                {EMAIL_DOMAIN}
+                            </span>
+                        </div>
 
                         {errors.email && (
                             <p className={errorClass}>{errors.email}</p>
@@ -254,7 +304,7 @@ export default function CreateEditModal({
                             value={data.password}
                             onChange={(e) => setData('password', e.target.value)}
                             placeholder="Minimal 8 karakter"
-                            autoComplete={isEdit ? 'new-password' : 'new-password'}
+                            autoComplete="new-password"
                             required={!isEdit}
                             minLength={8}
                             className={inputClass}

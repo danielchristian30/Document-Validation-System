@@ -13,6 +13,12 @@ class DashboardController extends Controller
 {
     public function index(Request $request)
     {
+        abort_unless(
+            $this->isAuthorizedSuperadmin($request->user()),
+            403,
+            'Akses ditolak: Akun tidak terdaftar sebagai superadmin secara sah.'
+        );
+        
         // Active Users
         $activeUsers = User::where('is_active', true)->count();
         $inactiveUsers = User::where('is_active', false)->count();
