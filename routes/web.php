@@ -39,6 +39,7 @@ Route::middleware(['auth', 'role:superadmin', 'superadmin.whitelist'])->group(fu
     Route::post('/superadmin/users', [SuperadminUserManagementController::class, 'store'])->name('superadmin.users.store');
     Route::put('/superadmin/users/{user}', [SuperadminUserManagementController::class, 'update'])->name('superadmin.users.update');
     Route::delete('/superadmin/users/{user}', [SuperadminUserManagementController::class, 'destroy'])->name('superadmin.users.destroy');
+    
     Route::get('/superadmin/ip-blocklist', function () { return Inertia::render('Superadmin/IpBlocklist/Index'); })->name('superadmin.ip-blocklist');
     Route::get('/superadmin/system-logs', function () { return Inertia::render('Superadmin/SystemLogs/Index'); })->name('superadmin.system-logs');
 

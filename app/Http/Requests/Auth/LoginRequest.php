@@ -61,13 +61,17 @@ class LoginRequest extends FormRequest
             ]);
         }
 
-        $user = Auth::getProvider()->retrieveByCredentials($this->only('email'));
+        // Ambil user yang sedang aktif setelah berhasil Auth::attempt (Lebih aman & support username/email)
+        $user = Auth::user();
+
         if ($user && !$user->is_active) {
+            // Jika akun nonaktif, langsung logout paksa dan gagalkan proses
             Auth::logout();
+
             throw ValidationException::withMessages([
-                'login' => 'Akun Anda telah dinonaktifkan. Silakan menghubungi Superadmin.'
+                'login' => 'Akun Anda telah dinonaktifkan. Silakan menghubungi Superadmin.',
             ]);
-        }
+        }   
 
         RateLimiter::clear($this->throttleKey());
     }
