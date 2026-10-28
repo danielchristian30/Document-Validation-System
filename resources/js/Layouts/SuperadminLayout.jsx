@@ -41,7 +41,7 @@ function NavigationLinks({ url, onNavigate }) {
         },
         {
             label: 'IP Blocklist',
-            href: route('superadmin.ip-blocklist'),
+            href: route('superadmin.ip-blocklist.index'),
             active: url?.startsWith('/superadmin/ip-blocklist'),
             icon: (
                 <svg className="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -51,7 +51,7 @@ function NavigationLinks({ url, onNavigate }) {
         },
         {
             label: 'System Logs',
-            href: route('superadmin.system-logs'),
+            href: route('superadmin.system-logs.index'),
             active: url?.startsWith('/superadmin/system-logs'),
             icon: (
                 <svg className="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">

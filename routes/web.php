@@ -9,6 +9,7 @@ use App\Http\Controllers\Superadmin\DashboardController as SuperadminDashboardCo
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Employee\DashboardController as EmployeeDashboardController;
 use App\Http\Controllers\Superadmin\UserManagementController as SuperadminUserManagementController;
+use App\Http\Controllers\Superadmin\IpBlockListController as SuperadminIpBlockListController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -19,7 +20,7 @@ Route::get('/', function () {
     ]);
 });
     
-// Routing dashboard berdasarkan Role
+// Routing berdasarkan Role
 Route::get('/dashboard', function (Request $request) {
     $role = $request->user()->role;      
     return match($role) {
@@ -28,10 +29,10 @@ Route::get('/dashboard', function (Request $request) {
         'employee'      => redirect()->route('employee.dashboard'),
         default         => abort(403, 'Role tidak terdaftar'),
     };
-})->middleware(['auth', 'superadmin.whitelist'])->name('dashboard');
+})->middleware(['auth'])->name('dashboard');
 
 // Route Superadmin
-Route::middleware(['auth', 'role:superadmin', 'superadmin.whitelist'])->group(function () {
+Route::middleware(['auth', 'role:superadmin'])->group(function () {
     Route::get('/superadmin/dashboard', [SuperadminDashboardController::class, 'index'])->name('superadmin.dashboard');
 
     // UserManagement Controller
@@ -39,9 +40,13 @@ Route::middleware(['auth', 'role:superadmin', 'superadmin.whitelist'])->group(fu
     Route::post('/superadmin/users', [SuperadminUserManagementController::class, 'store'])->name('superadmin.users.store');
     Route::put('/superadmin/users/{user}', [SuperadminUserManagementController::class, 'update'])->name('superadmin.users.update');
     Route::delete('/superadmin/users/{user}', [SuperadminUserManagementController::class, 'destroy'])->name('superadmin.users.destroy');
+
+    // IpBlockList Controller
+    Route::get('/superadmin/ip-blocklist', [SuperadminIpBlockListController::class, 'index'])->name('superadmin.ip-blocklist.index');
+    Route::post('/superadmin/ip-blocklist', [SuperadminIpBlockListController::class, 'store'])->name('superadmin.ip-blocklist.store');
+    Route::delete('/superadmin/ip-blocklist/{blockedIp}', [SuperadminIpBlockListController::class, 'destroy'])->name('superadmin.ip-blocklist.destroy');
     
-    Route::get('/superadmin/ip-blocklist', function () { return Inertia::render('Superadmin/IpBlocklist/Index'); })->name('superadmin.ip-blocklist');
-    Route::get('/superadmin/system-logs', function () { return Inertia::render('Superadmin/SystemLogs/Index'); })->name('superadmin.system-logs');
+    Route::get('/superadmin/system-logs', function () { return Inertia::render('Superadmin/SystemLogs/Index'); })->name('superadmin.system-logs.index');
 
 });
 
@@ -55,7 +60,7 @@ Route::middleware(['auth', 'role:employee'])->group(function () {
     Route::get('/employee/dashboard', [EmployeeDashboardController::class, 'index'])->name('employee.dashboard');
 });
 
-Route::middleware('auth', 'superadmin.whitelist')->group(function () {
+Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
