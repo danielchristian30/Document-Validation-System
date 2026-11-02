@@ -4,6 +4,44 @@ import { Head, router, usePage } from '@inertiajs/react';
 import SuperadminLayout from '@/Layouts/SuperadminLayout';
 import CreateEditModal from './CreateEdit';
 
+function StatIcon({ type }) {
+    const common = {
+        className: 'h-5 w-5',
+        fill: 'none',
+        viewBox: '0 0 24 24',
+        stroke: 'currentColor',
+        strokeWidth: 1.8,
+        strokeLinecap: 'round',
+        strokeLinejoin: 'round',
+    };
+
+    if (type === 'users') {
+        return (
+            <svg {...common}>
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+        );
+    }
+
+    if (type === 'admin') {
+        return (
+            <svg {...common}>
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+        );
+    }
+
+    return (
+        <svg {...common}>
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+        </svg>
+    );
+}
+
 export default function UsersIndex({ 
     users = [],
     rolesList = [],
@@ -49,7 +87,6 @@ export default function UsersIndex({
 
     // Tutup otomatis setelah 4,5 detik.
     useEffect(() => {
-        // Toast loading tetap terlihat sampai server memberikan respons.
         if (!toast || toast.type === 'loading') return;
 
         const timer = window.setTimeout(() => {
@@ -62,6 +99,11 @@ export default function UsersIndex({
     const safeUsers = Array.isArray(users) ? users : [];
     const activeUsers = safeUsers.filter((u) => u.is_active === 1 || u.is_active === true);
     const inactiveUsers = safeUsers.filter((u) => u.is_active === 0 || u.is_active === false);
+
+    // Hitung statistik untuk cards
+    const totalUsersCount = safeUsers.length;
+    const adminCount = safeUsers.filter((u) => u.role?.toLowerCase() === 'admin').length;
+    const employeeCount = safeUsers.filter((u) => u.role?.toLowerCase() === 'employee').length;
 
     useEffect(() => {
         setCurrentPage(1);
@@ -116,8 +158,6 @@ export default function UsersIndex({
     const handleConfirmDeactivate = () => {
         if (!selectedUser) return;
 
-        // Validasi lokal untuk menampilkan alert tanpa menunggu request ke server.
-        // Backend tetap wajib memvalidasi aturan yang sama untuk keamanan.
         if (String(auth?.user?.id) === String(selectedUser.id)) {
             setToast({
                 id: Date.now(),
@@ -140,8 +180,6 @@ export default function UsersIndex({
             return;
         }
 
-        // Operasi yang memang diizinkan tetap menunggu konfirmasi backend.
-        // Toast loading langsung muncul agar pengguna tahu proses dimulai.
         setToast({
             id: Date.now(),
             type: 'loading',
@@ -183,7 +221,7 @@ export default function UsersIndex({
         <div onClick={closeDropdown} className="min-h-full w-full min-w-0 space-y-5 sm:space-y-6">
             <Head title="Manajemen Pengguna - SIVALDEN" />
 
-            {/* TOAST ALERT: sederhana, ringkas, dan berada di tengah atas */}
+            {/* TOAST ALERT */}
             {mounted && toast && createPortal(
                 <>
                     <style>{`
@@ -274,12 +312,12 @@ export default function UsersIndex({
                 document.body
             )}
 
-            {/* HEADER PAGE & TOMBOL TAMBAH */}
+            {/* HEADER PAGE */}
             <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                    <span className="rounded-full bg-[#FCEBEC] px-3.5 py-1 text-xs font-semibold text-[#8B0F14]">
+                    {/* <span className="rounded-full bg-[#FCEBEC] px-3.5 py-1 text-xs font-semibold text-[#8B0F14]">
                         Modul Superadmin
-                    </span>
+                    </span> */}
                     <h1 className="mt-2 font-montserrat text-2xl font-extrabold text-[#262626] sm:text-3xl">
                         Manajemen Pengguna
                     </h1>
@@ -287,23 +325,42 @@ export default function UsersIndex({
                         Kelola akun Admin dan Pegawai operasional berdasarkan peran dan bidang, pantau hak akses, serta nonaktifkan akun terindikasi retas.
                     </p>
                 </div>
+            </div>
 
-                <button
-                    type="button"
-                    onClick={handleCreateUser}
-                    className="inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-[8px] bg-[#8B0F14] px-5 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-[#6B0A0F] active:scale-95 sm:w-auto"
-                >
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                    </svg>
-                    Tambah User Baru
-                </button>
+            {/* STATISTIC CARDS */}
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
+                <div className="group relative overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md sm:p-5">
+                    <div className="flex items-start justify-between">
+                        <p className="text-xs font-bold uppercase tracking-wider text-[#7F8C8D]">Total Pengguna</p>
+                        <span className="rounded-xl bg-[#FCEBEC] p-2.5 text-[#8B0F14] transition-transform duration-200 group-hover:scale-110"><StatIcon type="users" /></span>
+                    </div>
+                    <p className="mt-2 font-montserrat text-2xl font-extrabold text-[#262626] sm:mt-3 sm:text-3xl">{totalUsersCount}</p>
+                    <p className="mt-1 text-xs text-[#7F8C8D]">Seluruh akun terdaftar</p>
+                </div>
+
+                <div className="group relative overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md sm:p-5">
+                    <div className="flex items-start justify-between">
+                        <p className="text-xs font-bold uppercase tracking-wider text-[#7F8C8D]">User Admin</p>
+                        <span className="rounded-xl bg-[#FFF4E5] p-2.5 text-[#B7791F] transition-transform duration-200 group-hover:scale-110"><StatIcon type="admin" /></span>
+                    </div>
+                    <p className="mt-2 font-montserrat text-2xl font-extrabold text-[#262626] sm:mt-3 sm:text-3xl">{adminCount}</p>
+                    <p className="mt-1 text-xs text-[#7F8C8D]">Hak akses admin</p>
+                </div>
+
+                <div className="group relative overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md sm:p-5 col-span-2 lg:col-span-1">
+                    <div className="flex items-start justify-between">
+                        <p className="text-xs font-bold uppercase tracking-wider text-[#7F8C8D]">User Pegawai</p>
+                        <span className="rounded-xl bg-[#F3F4F6] p-2.5 text-[#626262] transition-transform duration-200 group-hover:scale-110"><StatIcon type="employee" /></span>
+                    </div>
+                    <p className="mt-2 font-montserrat text-2xl font-extrabold text-[#262626] sm:mt-3 sm:text-3xl">{employeeCount}</p>
+                    <p className="mt-1 text-xs text-[#7F8C8D]">Pengguna operasional bidang</p>
+                </div>
             </div>
 
             {/* CARD MANAJEMEN TABEL */}
             <div className="rounded-xl border border-[#E5E7EB] bg-white shadow-sm">
                 {/* TAB SWITCHER & SEARCH BAR */}
-                <div className="flex min-w-0 flex-col gap-4 border-b border-[#E5E7EB] p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+                <div className="flex min-w-0 flex-col gap-4 border-b border-[#E5E7EB] p-4 lg:flex-row lg:items-center lg:justify-between lg:px-6">
                     <div className="grid min-w-0 grid-cols-2 gap-2 min-[480px]:flex">
                         <button
                             onClick={() => setActiveTab('active')}
@@ -346,7 +403,7 @@ export default function UsersIndex({
                         </button>
                     </div>
 
-                    <div className="relative w-full min-w-0 sm:w-80 sm:shrink-0">
+                    <div className="relative w-full min-w-0 lg:flex-1 lg:max-w-md">
                         <input
                             type="text"
                             placeholder="Cari nama, email, role, atau bidang..."
@@ -363,9 +420,20 @@ export default function UsersIndex({
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                     </div>
+
+                    <button
+                        type="button"
+                        onClick={handleCreateUser}
+                        className="inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-[8px] bg-[#8B0F14] px-5 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-[#6B0A0F] active:scale-95 lg:w-auto"
+                    >
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
+                        Tambah User Baru
+                    </button>
                 </div>
 
-                {/* MOBILE USER CARDS: lebih nyaman daripada tabel lebar pada layar kecil */}
+                {/* MOBILE USER CARDS */}
                 <div className="divide-y divide-[#E5E7EB] md:hidden">
                     {paginatedUsers.length > 0 ? (
                         paginatedUsers.map((u) => (
@@ -642,7 +710,7 @@ export default function UsersIndex({
                 bidangList={bidangList}
             />
 
-            {/* MODAL DETAIL PROFIL (PORTAL LENGKAP) */}
+            {/* MODAL DETAIL PROFIL */}
             {mounted && showDetailModal && selectedUser && createPortal(
                 <div className="fixed inset-0 z-[9999] flex items-start justify-center overflow-y-auto bg-black/40 p-2 backdrop-blur-sm transition-opacity sm:items-center sm:p-4">
                     <div
@@ -718,7 +786,7 @@ export default function UsersIndex({
                 document.body
             )}
 
-            {/* MODAL KONFIRMASI (PORTAL LENGKAP) */}
+            {/* MODAL KONFIRMASI */}
             {mounted && showDeleteModal && selectedUser && createPortal(
                 <div className="fixed inset-0 z-[9999] flex items-start justify-center overflow-y-auto bg-black/40 p-2 backdrop-blur-sm transition-opacity sm:items-center sm:p-4">
                     <div

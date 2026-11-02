@@ -60,8 +60,10 @@ export default function IPBlocklistIndex({ blockedIps }) {
         reason: '',
     });
 
+    const safeBlockedIps = blockedIps && Array.isArray(blockedIps.data) ? blockedIps.data : [];
+
     // Filter data di sisi frontend berdasarkan pencarian & sumber
-    const filteredIPs = blockedIps.data.filter((item) => {
+    const filteredIPs = safeBlockedIps.filter((item) => {
         const keyword = search.trim().toLowerCase();
         const matchesSearch =
             item.ip_address.toLowerCase().includes(keyword) ||
@@ -73,8 +75,8 @@ export default function IPBlocklistIndex({ blockedIps }) {
         return matchesSearch && matchesFilter;
     });
 
-    const automaticCount = blockedIps.data.filter((item) => item.source === 'automatic').length;
-    const manualCount = blockedIps.data.filter((item) => item.source === 'manual').length;
+    const automaticCount = safeBlockedIps.filter((item) => item.source === 'automatic').length;
+    const manualCount = safeBlockedIps.filter((item) => item.source === 'manual').length;
 
     const closeModal = () => {
         setShowModal(false);
@@ -117,43 +119,32 @@ export default function IPBlocklistIndex({ blockedIps }) {
                             Kelola alamat IP yang diblokir untuk membantu melindungi sistem dari akses mencurigakan.
                         </p>
                     </div>
-
-                    <button
-                        type="button"
-                        onClick={() => setShowModal(true)}
-                        className="inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-lg bg-[#8B0F14] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#6B0A0F] focus:outline-none focus:ring-2 focus:ring-[#8B0F14] focus:ring-offset-2 sm:w-auto"
-                    >
-                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14m-7-7h14" />
-                        </svg>
-                        Blokir IP
-                    </button>
                 </div>
 
                 {/* Summary cards */}
                 <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-3">
-                    <div className="min-w-0 rounded-xl border border-[#E5E7EB] bg-white p-3 shadow-sm sm:p-5">
+                    <div className="group relative overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md sm:p-5">
                         <div className="flex items-start justify-between">
-                            <p className="text-xs font-medium text-[#7F8C8D]">Total IP Diblokir</p>
-                            <span className="rounded-lg bg-[#FCEBEC] p-2 text-[#8B0F14]"><StatIcon type="shield" /></span>
+                            <p className="text-xs font-bold uppercase tracking-wider text-[#7F8C8D]">Total IP Diblokir</p>
+                            <span className="rounded-xl bg-[#FCEBEC] p-2.5 text-[#8B0F14] transition-transform duration-200 group-hover:scale-110"><StatIcon type="shield" /></span>
                         </div>
-                        <p className="mt-2 font-montserrat text-2xl font-extrabold text-[#262626] sm:mt-3 sm:text-3xl">{blockedIps.total}</p>
+                        <p className="mt-2 font-montserrat text-2xl font-extrabold text-[#262626] sm:mt-3 sm:text-3xl">{blockedIps?.total ?? safeBlockedIps.length}</p>
                         <p className="mt-1 text-xs text-[#7F8C8D]">Alamat IP dalam daftar blokir aktif</p>
                     </div>
 
-                    <div className="min-w-0 rounded-xl border border-[#E5E7EB] bg-white p-3 shadow-sm sm:p-5">
+                    <div className="group relative overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md sm:p-5">
                         <div className="flex items-start justify-between">
-                            <p className="text-xs font-medium text-[#7F8C8D]">Blokir Otomatis</p>
-                            <span className="rounded-lg bg-[#FCEBEC] p-2 text-[#8B0F14]"><StatIcon type="zap" /></span>
+                            <p className="text-xs font-bold uppercase tracking-wider text-[#7F8C8D]">Blokir Otomatis</p>
+                            <span className="rounded-xl bg-[#FCEBEC] p-2.5 text-[#8B0F14] transition-transform duration-200 group-hover:scale-110"><StatIcon type="zap" /></span>
                         </div>
                         <p className="mt-2 font-montserrat text-2xl font-extrabold text-[#D92020] sm:mt-3 sm:text-3xl">{automaticCount}</p>
                         <p className="mt-1 text-xs text-[#7F8C8D]">Dipicu sistem keamanan</p>
                     </div>
 
-                    <div className="min-w-0 rounded-xl border border-[#E5E7EB] bg-white p-3 shadow-sm sm:p-5">
+                    <div className="group relative overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md sm:p-5 col-span-2 xl:col-span-1">
                         <div className="flex items-start justify-between">
-                            <p className="text-xs font-medium text-[#7F8C8D]">Blokir Manual</p>
-                            <span className="rounded-lg bg-[#F3F4F6] p-2 text-[#626262]"><StatIcon type="manual" /></span>
+                            <p className="text-xs font-bold uppercase tracking-wider text-[#7F8C8D]">Blokir Manual</p>
+                            <span className="rounded-xl bg-[#F3F4F6] p-2.5 text-[#626262] transition-transform duration-200 group-hover:scale-110"><StatIcon type="manual" /></span>
                         </div>
                         <p className="mt-2 font-montserrat text-2xl font-extrabold text-[#262626] sm:mt-3 sm:text-3xl">{manualCount}</p>
                         <p className="mt-1 text-xs text-[#7F8C8D]">Ditambahkan administrator</p>
@@ -161,14 +152,16 @@ export default function IPBlocklistIndex({ blockedIps }) {
                 </div>
 
                 {/* Main table panel */}
-                <section className="overflow-hidden rounded-xl border border-[#E5E7EB] bg-white shadow-sm">
-                    <div className="flex min-w-0 flex-col gap-4 border-b border-[#E5E7EB] p-4 sm:p-6 lg:flex-row lg:items-center lg:justify-between">
-                        <div>
+                <section className="rounded-xl border border-[#E5E7EB] bg-white shadow-sm">
+                    {/* Header Tabel & Search Bar Responsif */}
+                    <div className="flex min-w-0 flex-col gap-4 border-b border-[#E5E7EB] p-4 lg:flex-row lg:items-center lg:justify-between lg:px-6">
+                        <div className="min-w-0">
                             <h2 className="font-montserrat text-base font-bold text-[#262626]">Daftar IP yang Diblokir</h2>
                             <p className="mt-1 text-xs text-[#7F8C8D]">Pantau alasan, sumber, dan masa berlaku pemblokiran.</p>
                         </div>
 
-                        <div className="relative w-full min-w-0 lg:max-w-xs">
+                        {/* Search bar responsif */}
+                        <div className="relative w-full min-w-0 lg:flex-1 lg:max-w-md">
                             <svg className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#7F8C8D]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                 <circle cx="11" cy="11" r="7" />
                                 <path strokeLinecap="round" strokeLinejoin="round" d="m16 16 4 4" />
@@ -181,6 +174,18 @@ export default function IPBlocklistIndex({ blockedIps }) {
                                 className="w-full rounded-lg border border-[#E5E7EB] bg-white py-2.5 pl-9 pr-3 text-xs text-[#262626] placeholder-[#9CA3AF] transition focus:border-[#8B0F14] focus:outline-none focus:ring-1 focus:ring-[#8B0F14]"
                             />
                         </div>
+
+                        {/* Button Blokir IP */}
+                        <button
+                            type="button"
+                            onClick={() => setShowModal(true)}
+                            className="inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-lg bg-[#8B0F14] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#6B0A0F] focus:outline-none focus:ring-2 focus:ring-[#8B0F14] focus:ring-offset-2 lg:w-auto"
+                        >
+                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14m-7-7h14" />
+                            </svg>
+                            Blokir IP
+                        </button>                        
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2 px-4 pt-3 sm:px-6 sm:pt-4">
@@ -199,6 +204,69 @@ export default function IPBlocklistIndex({ blockedIps }) {
                             </button>
                         ))}
                         <span className="ml-auto text-xs text-[#7F8C8D]">{filteredIPs.length} data</span>
+                    </div>
+
+                    {/* MOBILE IP CARDS (Tampil saat layar kecil/split-screen) */}
+                    <div className="divide-y divide-[#E5E7EB] md:hidden">
+                        {filteredIPs.length > 0 ? (
+                            filteredIPs.map((item) => {
+                                const sourceLabel = item.source === 'automatic' ? 'Otomatis' : 'Manual';
+                                return (
+                                    <article key={item.id} className="space-y-3 p-4">
+                                        <div className="flex min-w-0 items-start justify-between gap-3">
+                                            <div className="flex min-w-0 items-center gap-2.5">
+                                                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#FCEBEC] text-[#8B0F14]">
+                                                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                                                        <circle cx="12" cy="12" r="9" />
+                                                        <path strokeLinecap="round" d="m5.6 5.6 12.8 12.8M18.4 5.6 5.6 18.4" />
+                                                    </svg>
+                                                </span>
+                                                <span className="font-mono text-xs font-semibold text-[#262626] break-all">{item.ip_address}</span>
+                                            </div>
+                                            <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold shrink-0 ${item.source === 'automatic' ? 'bg-[#FCEBEC] text-[#8B0F14]' : 'bg-[#F3F4F6] text-[#525252]'}`}>
+                                                <span className={`h-1.5 w-1.5 rounded-full ${item.source === 'automatic' ? 'bg-[#D92020]' : 'bg-[#737373]'}`} />
+                                                {sourceLabel}
+                                            </span>
+                                        </div>
+
+                                        <p className="text-xs text-[#626262] break-words">
+                                            <span className="font-semibold text-[#7F8C8D]">Alasan: </span>
+                                            {item.reason || '-'}
+                                        </p>
+
+                                        <dl className="grid grid-cols-2 gap-3 rounded-lg bg-[#F9FAFB] p-3 text-xs">
+                                            <div className="min-w-0">
+                                                <dt className="text-[10px] text-[#7F8C8D]">Waktu Diblokir</dt>
+                                                <dd className="mt-1 font-mono text-[11px] text-[#626262]">
+                                                    {new Date(item.created_at).toLocaleString('id-ID')}
+                                                </dd>
+                                            </div>
+                                            <div className="min-w-0">
+                                                <dt className="text-[10px] text-[#7F8C8D]">Kedaluwarsa</dt>
+                                                <dd className="mt-1 font-mono text-[11px] text-[#626262]">
+                                                    {item.expires_at ? new Date(item.expires_at).toLocaleString('id-ID') : <span className="font-medium text-[#8B0F14]">Permanen</span>}
+                                                </dd>
+                                            </div>
+                                        </dl>
+
+                                        <div className="flex justify-end pt-1">
+                                            <button
+                                                type="button"
+                                                onClick={() => setSelectedUnblockIP(item)}
+                                                className="inline-flex items-center gap-1.5 rounded-lg border border-[#F2C9CB] px-3 py-1.5 text-[11px] font-semibold text-[#8B0F14] transition hover:bg-[#FCEBEC]"
+                                            >
+                                                Buka blokir
+                                            </button>
+                                        </div>
+                                    </article>
+                                );
+                            })
+                        ) : (
+                            <div className="px-4 py-10 text-center">
+                                <p className="text-sm font-semibold text-[#262626]">Tidak ada IP ditemukan</p>
+                                <p className="mt-1 text-xs text-[#7F8C8D]">Coba ubah kata kunci atau filter pencarian.</p>
+                            </div>
+                        )}
                     </div>
 
                     {/* Desktop/tablet table */}
