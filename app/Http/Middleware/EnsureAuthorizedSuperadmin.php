@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -17,6 +18,7 @@ class EnsureAuthorizedSuperadmin
     {
         $user = $request->user();
 
+        // Cek Superadmin berdasarkan whitelist email
         if ($user && $user->role === 'superadmin') {
             $whitelist = config('access.superadmin_emails', []);
 
@@ -29,11 +31,26 @@ class EnsureAuthorizedSuperadmin
                 true
             );
 
-            abort_unless(
-                $authorized,
-                403,
-                'Akses ditolak: Akun superadmin tidak terdaftar dalam whitelist.'
-            );
+            // Hapus Session Login
+            if (!$authorized) {
+                Auth::logout();
+
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+
+                abort_unless(
+                    $authorized,
+                    403,
+                    'Akses ditolak: Akun superadmin tidak terdaftar dalam whitelist.'
+                );
+
+                return redirect()->route('login');
+            }
+
+            // return redirect()->route('login')->with(
+            //     'error',
+            //     'Akun Anda telah dinonaktifkan. Silakan menghubungi Superadmin.'
+            // );
         }
 
         return $next($request);
