@@ -27,6 +27,7 @@ class IpBlockListController extends Controller
 
         return Inertia::render('Superadmin/IpBlocklist/Index', [
             'blockedIps' => $blockedIps,
+            'reasonOptions' => config('access.ip_block_reasons', []),
         ]); 
     }
 

@@ -319,7 +319,7 @@ export default function UsersIndex({
                         Manajemen Pengguna
                     </h1>
                     <p className="mt-1 max-w-3xl text-sm leading-6 text-[#7F8C8D]">
-                        Kelola akun Admin dan Pegawai operasional berdasarkan peran dan bidang, pantau hak akses, serta nonaktifkan akun terindikasi retas.
+                        Kelola akun Admin dan Pegawai operasional berdasarkan peran dan bidang, pantau hak akses, serta nonaktifkan akun terindikasi diretas.
                     </p>
                 </div>
             </div>

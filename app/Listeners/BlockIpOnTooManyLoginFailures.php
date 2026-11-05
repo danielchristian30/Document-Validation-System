@@ -28,7 +28,7 @@ class BlockIpOnTooManyLoginFailures
         // Penambahan nilai dilakukan secara atomik oleh cache store
         $attemps = Cache::increment($cacheKey);
 
-        if ($attemps <= 10) {
+        if ($attemps < 10) {
             return;
         }
 
