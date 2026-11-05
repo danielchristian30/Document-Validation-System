@@ -18,6 +18,6 @@ class Category extends Model
     // relasi : satu kategori bisa memiliki banyak dokumen
     public function documents(): HasMany
     {
-        return $this->hasMany(DOcument::class);
+        return $this->hasMany(Document::class);
     }
 }

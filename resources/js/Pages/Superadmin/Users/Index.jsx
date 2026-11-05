@@ -1,41 +1,120 @@
 import React, { useState, useEffect } from 'react';
-import { Head, Link, useForm, router } from '@inertiajs/react';
+import { createPortal } from 'react-dom';
+import { Head, router, usePage } from '@inertiajs/react';
 import SuperadminLayout from '@/Layouts/SuperadminLayout';
+import CreateEditModal from './CreateEdit';
 
-export default function UsersIndex({ users = [] }) { // <-- Berikan default value [] di sini
+function StatIcon({ type }) {
+    const common = {
+        className: 'h-5 w-5',
+        fill: 'none',
+        viewBox: '0 0 24 24',
+        stroke: 'currentColor',
+        strokeWidth: 1.8,
+        strokeLinecap: 'round',
+        strokeLinejoin: 'round',
+    };
+
+    if (type === 'users') {
+        return (
+            <svg {...common}>
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+        );
+    }
+
+    if (type === 'admin') {
+        return (
+            <svg {...common}>
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+        );
+    }
+
+    return (
+        <svg {...common}>
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+        </svg>
+    );
+}
+
+export default function UsersIndex({ 
+    users = [],
+    rolesList = [],
+    bidangList = [],
+}) {
     // State Tab, Search, & Dropdown Menu
-    const [activeTab, setActiveTab] = useState('active'); // 'active' | 'inactive'
+    const [activeTab, setActiveTab] = useState('active');
     const [searchQuery, setSearchQuery] = useState('');
     const [activeDropdown, setActiveDropdown] = useState(null);
     const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0 });
 
-    // State Paginasi (Maksimal 10 Data Per Halaman)
+    // State Paginasi
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
 
-    // State Modal
+    // State Modal & Mount Check
     const [selectedUser, setSelectedUser] = useState(null);
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [showFormModal, setShowFormModal] = useState(false);
+    const [mounted, setMounted] = useState(false);
 
-    // Amankan pemfilteran dengan memastikan `users` adalah array
+    // Flash message dari Laravel yang dibagikan melalui HandleInertiaRequests.
+    const { flash, auth } = usePage().props;
+    const [toast, setToast] = useState(null);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    // Buat toast ketika ada flash error atau success baru dari backend.
+    useEffect(() => {
+        const message = flash?.error || flash?.success;
+
+        if (!message) return;
+
+        setToast({
+            id: Date.now(),
+            type: flash?.error ? 'error' : 'success',
+            message,
+        });
+    }, [flash?.error, flash?.success]);
+
+    // Tutup otomatis setelah 4,5 detik.
+    useEffect(() => {
+        if (!toast || toast.type === 'loading') return;
+
+        const timer = window.setTimeout(() => {
+            setToast(null);
+        }, 4500);
+
+        return () => window.clearTimeout(timer);
+    }, [toast]);
+
     const safeUsers = Array.isArray(users) ? users : [];
     const activeUsers = safeUsers.filter((u) => u.is_active === 1 || u.is_active === true);
     const inactiveUsers = safeUsers.filter((u) => u.is_active === 0 || u.is_active === false);
 
-    // Reset ke Halaman 1 saat ganti Tab atau melakukan Pencarian
+    // Hitung statistik untuk cards
+    const totalUsersCount = safeUsers.length;
+    const adminCount = safeUsers.filter((u) => u.role?.toLowerCase() === 'admin').length;
+    const employeeCount = safeUsers.filter((u) => u.role?.toLowerCase() === 'employee').length;
+
     useEffect(() => {
         setCurrentPage(1);
     }, [activeTab, searchQuery]);
 
-    // Tutup dropdown otomatis saat window di-scroll
     useEffect(() => {
         const handleScroll = () => setActiveDropdown(null);
         window.addEventListener('scroll', handleScroll, true);
         return () => window.removeEventListener('scroll', handleScroll, true);
     }, []);
 
-    // Toggle Dropdown 3 Titik
     const toggleDropdown = (id, e) => {
         e.stopPropagation();
         if (activeDropdown === id) {
@@ -43,17 +122,27 @@ export default function UsersIndex({ users = [] }) { // <-- Berikan default valu
         } else {
             const rect = e.currentTarget.getBoundingClientRect();
             setDropdownPos({
-                top: rect.bottom + 4,
-                left: Math.max(16, rect.right - 192),
+                top: Math.min(rect.bottom + 4, Math.max(12, window.innerHeight - 240)),
+                left: Math.min(Math.max(16, rect.right - 192), Math.max(16, window.innerWidth - 208)),
             });
             setActiveDropdown(id);
         }
     };
 
-    // Close Dropdown saat klik di luar
     const closeDropdown = () => setActiveDropdown(null);
 
-    // Action Handlers
+    const handleCreateUser = () => {
+        setSelectedUser(null);
+        setShowFormModal(true);
+        closeDropdown();
+    };
+
+    const handleEditUser = (user) => {
+        setSelectedUser(user);
+        setShowFormModal(true);
+        closeDropdown();
+    };
+
     const handleViewProfile = (user) => {
         setSelectedUser(user);
         setShowDetailModal(true);
@@ -69,16 +158,52 @@ export default function UsersIndex({ users = [] }) { // <-- Berikan default valu
     const handleConfirmDeactivate = () => {
         if (!selectedUser) return;
 
+        if (String(auth?.user?.id) === String(selectedUser.id)) {
+            setToast({
+                id: Date.now(),
+                type: 'error',
+                message: 'Anda tidak dapat menonaktifkan akun sendiri.',
+            });
+            setShowDeleteModal(false);
+            setSelectedUser(null);
+            return;
+        }
+
+        if (selectedUser.role === 'superadmin') {
+            setToast({
+                id: Date.now(),
+                type: 'error',
+                message: 'Akun Superadmin tidak bisa dinonaktifkan.',
+            });
+            setShowDeleteModal(false);
+            setSelectedUser(null);
+            return;
+        }
+
+        setToast({
+            id: Date.now(),
+            type: 'loading',
+            message: selectedUser.is_active
+                ? `Sedang menonaktifkan akun ${selectedUser.name}...`
+                : `Sedang mengaktifkan kembali akun ${selectedUser.name}...`,
+        });
+
         router.delete(route('superadmin.users.destroy', selectedUser.id), {
             preserveScroll: true,
             onSuccess: () => {
                 setShowDeleteModal(false);
                 setSelectedUser(null);
             },
+            onError: () => {
+                setToast({
+                    id: Date.now(),
+                    type: 'error',
+                    message: 'Permintaan gagal diproses. Periksa kembali koneksi dan data pengguna.',
+                });
+            },
         });
     };
 
-    // Filtered Users berdasarkan Search Query
     const currentList = activeTab === 'active' ? activeUsers : inactiveUsers;
     const filteredUsers = currentList.filter(
         (u) =>
@@ -88,49 +213,155 @@ export default function UsersIndex({ users = [] }) { // <-- Berikan default valu
             (u.bidang && u.bidang.toLowerCase().includes(searchQuery.toLowerCase()))
     );
 
-    // Hitung Slicing Paginasi
     const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
     const paginatedUsers = filteredUsers.slice(startIndex, startIndex + itemsPerPage);
 
     return (
-        <div onClick={closeDropdown} className="min-h-full space-y-6">
+        <div onClick={closeDropdown} className="min-h-full w-full min-w-0 space-y-5 sm:space-y-6">
             <Head title="Manajemen Pengguna - SIVALDEN" />
 
-            {/* HEADER PAGE & TOMBOL TAMBAH */}
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            {/* TOAST ALERT */}
+            {mounted && toast && createPortal(
+                <>
+                    <style>{`
+                        @keyframes sivalden-toast-progress {
+                            from { width: 100%; }
+                            to { width: 0%; }
+                        }
+                        @keyframes sivalden-toast-loading {
+                            from { transform: translateX(-110%); }
+                            to { transform: translateX(280%); }
+                        }
+                    `}</style>
+
+                    <div
+                        key={toast.id}
+                        role={toast.type === 'error' ? 'alert' : 'status'}
+                        aria-live={toast.type === 'error' ? 'assertive' : 'polite'}
+                        className={`fixed left-1/2 top-4 z-[10000] w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 overflow-hidden rounded-lg border border-[#E5E7EB] border-l-4 bg-white shadow-md ${
+                            toast.type === 'error'
+                                ? 'border-l-[#D92020]'
+                                : toast.type === 'loading'
+                                    ? 'border-l-[#8B0F14]'
+                                    : 'border-l-[#1E8E3E]'
+                        }`}
+                    >
+                        <div className="flex items-center gap-2.5 px-3.5 py-3">
+                            <div className={`shrink-0 ${
+                                toast.type === 'error'
+                                    ? 'text-[#D92020]'
+                                    : toast.type === 'loading'
+                                        ? 'text-[#8B0F14]'
+                                        : 'text-[#1E8E3E]'
+                            }`}>
+                                {toast.type === 'loading' ? (
+                                    <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <circle className="opacity-25" cx="12" cy="12" r="9" strokeWidth="3" />
+                                        <path className="opacity-75" strokeLinecap="round" strokeWidth="3" d="M21 12a9 9 0 00-9-9" />
+                                    </svg>
+                                ) : toast.type === 'error' ? (
+                                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                ) : (
+                                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                )}
+                            </div>
+
+                            <div className="min-w-0 flex-1 text-sm leading-snug text-[#262626]">
+                                <span className="mr-1.5 font-semibold">
+                                    {toast.type === 'error'
+                                        ? 'Gagal.'
+                                        : toast.type === 'loading'
+                                            ? 'Memproses.'
+                                            : 'Berhasil.'}
+                                </span>
+                                <span className="break-words text-[#525252]">{toast.message}</span>
+                            </div>
+
+                            <button
+                                type="button"
+                                onClick={() => setToast(null)}
+                                aria-label="Tutup notifikasi"
+                                className="shrink-0 rounded p-1 text-[#9CA3AF] transition hover:bg-[#F3F4F6] hover:text-[#262626]"
+                            >
+                                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div className="h-0.5 w-full overflow-hidden bg-[#F3F4F6]">
+                            {toast.type === 'loading' ? (
+                                <div
+                                    className="h-full w-2/5 bg-[#8B0F14]"
+                                    style={{ animation: 'sivalden-toast-loading 1.2s ease-in-out infinite' }}
+                                />
+                            ) : (
+                                <div
+                                    className={`h-full ${toast.type === 'error' ? 'bg-[#D92020]' : 'bg-[#1E8E3E]'}`}
+                                    style={{ animation: 'sivalden-toast-progress 4500ms linear forwards' }}
+                                />
+                            )}
+                        </div>
+                    </div>
+                </>,
+                document.body
+            )}
+
+            {/* HEADER PAGE */}
+            <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                    <span className="rounded-full bg-[#FCEBEC] px-3.5 py-1 text-xs font-semibold text-[#8B0F14]">
-                        Modul Superadmin
-                    </span>
                     <h1 className="mt-2 font-montserrat text-2xl font-extrabold text-[#262626] sm:text-3xl">
                         Manajemen Pengguna
                     </h1>
-                    <p className="mt-1 text-sm text-[#7F8C8D]">
-                        Kelola akun Admin dan Pegawai operasional berdasarkan peran dan bidang, pantau hak akses, serta nonaktifkan akun terindikasi retas.
+                    <p className="mt-1 max-w-3xl text-sm leading-6 text-[#7F8C8D]">
+                        Kelola akun Admin dan Pegawai operasional berdasarkan peran dan bidang, pantau hak akses, serta nonaktifkan akun terindikasi diretas.
                     </p>
                 </div>
+            </div>
 
-                <Link
-                    href="/superadmin/users/create"
-                    className="inline-flex items-center gap-2 rounded-[8px] bg-[#8B0F14] px-5 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-[#6B0A0F] active:scale-95 shrink-0"
-                >
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                    </svg>
-                    Tambah User Baru
-                </Link>
+            {/* STATISTIC CARDS */}
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
+                <div className="group relative overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md sm:p-5 last:odd:col-span-2 lg:last:odd:col-span-1">
+                    <div className="flex items-start justify-between">
+                        <p className="text-xs font-bold uppercase tracking-wider text-[#7F8C8D]">Total Pengguna</p>
+                        <span className="rounded-xl bg-[#FCEBEC] p-2.5 text-[#8B0F14] transition-transform duration-200 group-hover:scale-110"><StatIcon type="users" /></span>
+                    </div>
+                    <p className="mt-2 font-montserrat text-2xl font-extrabold text-[#262626] sm:mt-3 sm:text-3xl">{totalUsersCount}</p>
+                    <p className="mt-1 text-xs text-[#7F8C8D]">Seluruh akun terdaftar</p>
+                </div>
+
+                <div className="group relative overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md sm:p-5 last:odd:col-span-2 lg:last:odd:col-span-1">
+                    <div className="flex items-start justify-between">
+                        <p className="text-xs font-bold uppercase tracking-wider text-[#7F8C8D]">User Admin</p>
+                        <span className="rounded-xl bg-[#FFF4E5] p-2.5 text-[#B7791F] transition-transform duration-200 group-hover:scale-110"><StatIcon type="admin" /></span>
+                    </div>
+                    <p className="mt-2 font-montserrat text-2xl font-extrabold text-[#262626] sm:mt-3 sm:text-3xl">{adminCount}</p>
+                    <p className="mt-1 text-xs text-[#7F8C8D]">Hak akses admin</p>
+                </div>
+
+                <div className="group relative overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md sm:p-5 last:odd:col-span-2 lg:last:odd:col-span-1">
+                    <div className="flex items-start justify-between">
+                        <p className="text-xs font-bold uppercase tracking-wider text-[#7F8C8D]">User Pegawai</p>
+                        <span className="rounded-xl bg-[#F3F4F6] p-2.5 text-[#626262] transition-transform duration-200 group-hover:scale-110"><StatIcon type="employee" /></span>
+                    </div>
+                    <p className="mt-2 font-montserrat text-2xl font-extrabold text-[#262626] sm:mt-3 sm:text-3xl">{employeeCount}</p>
+                    <p className="mt-1 text-xs text-[#7F8C8D]">Pengguna operasional bidang</p>
+                </div>
             </div>
 
             {/* CARD MANAJEMEN TABEL */}
             <div className="rounded-xl border border-[#E5E7EB] bg-white shadow-sm">
                 {/* TAB SWITCHER & SEARCH BAR */}
-                <div className="flex flex-col gap-4 border-b border-[#E5E7EB] p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-                    {/* Tab Navigation */}
-                    <div className="flex gap-2">
+                <div className="flex min-w-0 flex-col gap-4 border-b border-[#E5E7EB] p-4 lg:flex-row lg:items-center lg:justify-between lg:px-6">
+                    <div className="grid min-w-0 grid-cols-2 gap-2 min-[480px]:flex">
                         <button
                             onClick={() => setActiveTab('active')}
-                            className={`flex items-center gap-2 rounded-[8px] px-4 py-2 text-xs font-bold transition ${
+                            className={`flex w-full items-center justify-center gap-2 rounded-[8px] px-3 py-2 text-xs font-bold transition min-[480px]:w-auto min-[480px]:px-4 ${
                                 activeTab === 'active'
                                     ? 'bg-[#1E8E3E] text-white shadow-sm'
                                     : 'bg-[#F5F5F5] text-[#7F8C8D] hover:bg-[#E5E7EB] hover:text-[#262626]'
@@ -150,7 +381,7 @@ export default function UsersIndex({ users = [] }) { // <-- Berikan default valu
 
                         <button
                             onClick={() => setActiveTab('inactive')}
-                            className={`flex items-center gap-2 rounded-[8px] px-4 py-2 text-xs font-bold transition ${
+                            className={`flex w-full items-center justify-center gap-2 rounded-[8px] px-3 py-2 text-xs font-bold transition min-[480px]:w-auto min-[480px]:px-4 ${
                                 activeTab === 'inactive'
                                     ? 'bg-[#D92020] text-white shadow-sm'
                                     : 'bg-[#F5F5F5] text-[#7F8C8D] hover:bg-[#E5E7EB] hover:text-[#262626]'
@@ -169,14 +400,13 @@ export default function UsersIndex({ users = [] }) { // <-- Berikan default valu
                         </button>
                     </div>
 
-                    {/* Search Input Box */}
-                    <div className="relative w-full sm:w-80">
+                    <div className="relative w-full min-w-0 lg:flex-1 lg:max-w-md">
                         <input
                             type="text"
                             placeholder="Cari nama, email, role, atau bidang..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full rounded-[8px] border border-[#E5E7EB] bg-[#F5F5F5] pl-9 pr-4 py-2 text-xs text-[#262626] focus:border-[#8B0F14] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#8B0F14]"
+                            className="w-full rounded-[8px] border border-[#E5E7EB] bg-[#F5F5F5] py-2 pl-9 pr-3 text-xs text-[#262626] focus:border-[#8B0F14] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#8B0F14]"
                         />
                         <svg
                             className="absolute left-3 top-2.5 h-4 w-4 text-[#7F8C8D]"
@@ -187,11 +417,81 @@ export default function UsersIndex({ users = [] }) { // <-- Berikan default valu
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                     </div>
+
+                    <button
+                        type="button"
+                        onClick={handleCreateUser}
+                        className="inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-[8px] bg-[#8B0F14] px-5 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-[#6B0A0F] active:scale-95 lg:w-auto"
+                    >
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
+                        Tambah User Baru
+                    </button>
                 </div>
 
-                {/* TABEL DATA PENGGUNA */}
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs font-dmsans">
+                {/* MOBILE USER CARDS */}
+                <div className="divide-y divide-[#E5E7EB] md:hidden">
+                    {paginatedUsers.length > 0 ? (
+                        paginatedUsers.map((u) => (
+                            <article key={u.id} className="space-y-3 p-4">
+                                <div className="flex min-w-0 items-start justify-between gap-3">
+                                    <div className="flex min-w-0 items-center gap-3">
+                                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#8B0F14] font-montserrat font-bold text-white">
+                                            {u.name ? u.name.charAt(0) : 'U'}
+                                        </div>
+                                        <div className="min-w-0">
+                                            <p className="break-words font-montserrat text-sm font-bold text-[#262626]">{u.name}</p>
+                                            <p className="mt-0.5 break-all text-[11px] text-[#7F8C8D]">{u.email}</p>
+                                        </div>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        aria-label={`Aksi untuk ${u.name}`}
+                                        onClick={(e) => toggleDropdown(u.id, e)}
+                                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#E5E7EB] text-[#7F8C8D] transition hover:bg-[#F5F5F5] hover:text-[#262626]"
+                                    >
+                                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                                        </svg>
+                                    </button>
+                                </div>
+
+                                <div className="flex flex-wrap gap-2">
+                                    <span className="inline-flex max-w-full break-words rounded-md bg-[#8B0F14]/10 px-2.5 py-1 text-[10px] font-semibold uppercase text-[#8B0F14]">{u.role}</span>
+                                    <span className="inline-flex max-w-full break-words rounded-md bg-[#F5F5F5] px-2.5 py-1 text-[10px] font-medium uppercase text-[#262626]">{u.bidang || '-'}</span>
+                                </div>
+
+                                <dl className="grid grid-cols-2 gap-3 rounded-lg bg-[#F9FAFB] p-3 text-xs">
+                                    <div className="min-w-0">
+                                        <dt className="text-[10px] text-[#7F8C8D]">Status</dt>
+                                        <dd className={`mt-1 inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-semibold ${u.is_active ? 'bg-[#1E8E3E]/10 text-[#1E8E3E]' : 'bg-[#D92020]/10 text-[#D92020]'}`}>
+                                            <span className={`h-1.5 w-1.5 rounded-full ${u.is_active ? 'bg-[#1E8E3E]' : 'bg-[#D92020]'}`} />
+                                            {u.is_active ? 'Aktif' : 'Nonaktif'}
+                                        </dd>
+                                    </div>
+                                    <div className="min-w-0">
+                                        <dt className="text-[10px] text-[#7F8C8D]">{activeTab === 'active' ? 'Waktu Dibuat' : 'Waktu Dinonaktifkan'}</dt>
+                                        <dd className="mt-1 break-words text-[11px] leading-4 text-[#525252]">
+                                            {activeTab === 'active'
+                                                ? (u.created_at ? new Date(u.created_at).toLocaleString('id-ID') : '-')
+                                                : (u.deactivated_at ? new Date(u.deactivated_at).toLocaleString('id-ID') : '-')}
+                                        </dd>
+                                    </div>
+                                </dl>
+                            </article>
+                        ))
+                    ) : (
+                        <div className="px-4 py-10 text-center">
+                            <p className="text-sm font-semibold text-[#262626]">Tidak ada data pengguna</p>
+                            <p className="mt-1 text-xs text-[#7F8C8D]">Coba ubah kata kunci atau tab yang dipilih.</p>
+                        </div>
+                    )}
+                </div>
+
+                {/* DESKTOP/TABLET TABLE */}
+                <div className="hidden overflow-x-auto md:block">
+                    <table className="w-full min-w-[760px] text-left text-xs font-dmsans">
                         <thead className="bg-[#F5F5F5] font-montserrat text-[11px] font-bold uppercase tracking-wider text-[#7F8C8D]">
                             <tr>
                                 <th className="px-6 py-3.5">Nama</th>
@@ -301,7 +601,8 @@ export default function UsersIndex({ users = [] }) { // <-- Berikan default valu
                     </p>
 
                     {totalPages > 1 && (
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex flex-wrap items-center justify-between gap-1.5 sm:justify-end">
+                            <span className="px-1 text-xs text-[#7F8C8D] sm:hidden">Halaman {currentPage} / {totalPages}</span>
                             <button
                                 onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                                 disabled={currentPage === 1}
@@ -314,7 +615,7 @@ export default function UsersIndex({ users = [] }) { // <-- Berikan default valu
                                 <button
                                     key={page}
                                     onClick={() => setCurrentPage(page)}
-                                    className={`h-8 min-w-[32px] rounded-lg text-xs font-semibold transition ${
+                                    className={`hidden h-8 min-w-[32px] rounded-lg text-xs font-semibold transition sm:inline-flex sm:items-center sm:justify-center ${
                                         currentPage === page
                                             ? 'bg-[#8B0F14] text-white shadow-sm'
                                             : 'border border-[#E5E7EB] bg-white text-[#262626] hover:bg-[#F5F5F5]'
@@ -358,15 +659,15 @@ export default function UsersIndex({ users = [] }) { // <-- Berikan default valu
                                     Lihat Profil
                                 </button>
 
-                                <Link
-                                    href={`/superadmin/users/${u.id}/edit`}
+                                <button
+                                    onClick={() => handleEditUser(u)}
                                     className="flex w-full items-center gap-2.5 px-4 py-2 text-xs font-medium text-[#262626] transition hover:bg-[#F5F5F5] hover:text-[#8B0F14]"
                                 >
                                     <svg className="h-4 w-4 text-[#7F8C8D]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                     </svg>
                                     Edit Profil
-                                </Link>
+                                </button>
 
                                 <hr className="my-1 border-[#E5E7EB]" />
 
@@ -397,11 +698,20 @@ export default function UsersIndex({ users = [] }) { // <-- Berikan default valu
                 </div>
             )}
 
+            {/* MODAL FORM CREATE & EDIT */}
+            <CreateEditModal
+                show={showFormModal}
+                onClose={() => setShowFormModal(false)}
+                user={selectedUser}
+                rolesList={rolesList}
+                bidangList={bidangList}
+            />
+
             {/* MODAL DETAIL PROFIL */}
-            {showDetailModal && selectedUser && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm transition-opacity">
+            {mounted && showDetailModal && selectedUser && createPortal(
+                <div className="fixed inset-0 z-[9999] flex items-start justify-center overflow-y-auto bg-black/40 p-2 backdrop-blur-sm transition-opacity sm:items-center sm:p-4">
                     <div
-                        className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl transition-all sm:p-7"
+                        className="relative my-auto max-h-[calc(100dvh-1rem)] w-full max-w-md overflow-y-auto overscroll-contain rounded-2xl bg-white p-4 shadow-2xl transition-all sm:max-h-[calc(100dvh-2rem)] sm:p-7"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <button
@@ -426,34 +736,34 @@ export default function UsersIndex({ users = [] }) { // <-- Berikan default valu
                         </div>
 
                         <div className="mt-6 space-y-3 rounded-xl bg-[#F8F9FA] p-4 text-xs border border-[#E5E7EB]/60">
-                            <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-2.5">
+                            <div className="flex flex-col gap-1 border-b border-[#E5E7EB] pb-2.5 sm:flex-row sm:items-center sm:justify-between">
                                 <span className="text-[#7F8C8D]">Nama Lengkap:</span>
                                 <span className="font-semibold text-[#262626]">{selectedUser.name}</span>
                             </div>
-                            <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-2.5">
+                            <div className="flex flex-col gap-1 border-b border-[#E5E7EB] pb-2.5 sm:flex-row sm:items-center sm:justify-between">
                                 <span className="text-[#7F8C8D]">Email:</span>
-                                <span className="font-medium text-[#262626]">{selectedUser.email}</span>
+                                <span className="break-all font-medium text-[#262626] sm:text-right">{selectedUser.email}</span>
                             </div>
-                            <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-2.5">
+                            <div className="flex flex-col gap-1 border-b border-[#E5E7EB] pb-2.5 sm:flex-row sm:items-center sm:justify-between">
                                 <span className="text-[#7F8C8D]">Role (Peran):</span>
                                 <span className="font-bold text-[#8B0F14] uppercase">{selectedUser.role}</span>
                             </div>
-                            <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-2.5">
+                            <div className="flex flex-col gap-1 border-b border-[#E5E7EB] pb-2.5 sm:flex-row sm:items-center sm:justify-between">
                                 <span className="text-[#7F8C8D]">Bidang:</span>
                                 <span className="font-semibold text-[#262626] uppercase">{selectedUser.bidang || '-'}</span>
                             </div>
-                            <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-2.5">
+                            <div className="flex flex-col gap-1 border-b border-[#E5E7EB] pb-2.5 sm:flex-row sm:items-center sm:justify-between">
                                 <span className="text-[#7F8C8D]">Status Akun:</span>
                                 <span className={`font-bold ${selectedUser.is_active ? 'text-[#1E8E3E]' : 'text-[#D92020]'}`}>
                                     {selectedUser.is_active ? 'Aktif' : 'Nonaktif'}
                                 </span>
                             </div>
-                            <div className="flex items-center justify-between">
+                            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                                 <span className="text-[#7F8C8D]">Waktu Dibuat:</span>
                                 <span className="font-mono text-[#262626]">{new Date(selectedUser.created_at).toLocaleString('id-ID')}</span>
                             </div>
                             {!selectedUser.is_active && selectedUser.deactivated_at && (
-                                <div className="flex items-center justify-between border-t border-[#E5E7EB] pt-2.5">
+                                <div className="flex flex-col gap-1 border-t border-[#E5E7EB] pt-2.5 sm:flex-row sm:items-center sm:justify-between">
                                     <span className="text-[#7F8C8D]">Dinonaktifkan Pada:</span>
                                     <span className="font-mono font-semibold text-[#D92020]">{new Date(selectedUser.deactivated_at).toLocaleString('id-ID')}</span>
                                 </div>
@@ -469,14 +779,15 @@ export default function UsersIndex({ users = [] }) { // <-- Berikan default valu
                             </button>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
 
             {/* MODAL KONFIRMASI */}
-            {showDeleteModal && selectedUser && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm transition-opacity">
+            {mounted && showDeleteModal && selectedUser && createPortal(
+                <div className="fixed inset-0 z-[9999] flex items-start justify-center overflow-y-auto bg-black/40 p-2 backdrop-blur-sm transition-opacity sm:items-center sm:p-4">
                     <div
-                        className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl transition-all sm:p-7"
+                        className="relative my-auto max-h-[calc(100dvh-1rem)] w-full max-w-md overflow-y-auto overscroll-contain rounded-2xl bg-white p-4 shadow-2xl transition-all sm:max-h-[calc(100dvh-2rem)] sm:p-7"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="flex items-start gap-4">
@@ -497,22 +808,23 @@ export default function UsersIndex({ users = [] }) { // <-- Berikan default valu
                             </div>
                         </div>
 
-                        <div className="mt-6 flex justify-end gap-3 border-t border-[#E5E7EB] pt-4">
+                        <div className="mt-6 flex flex-col-reverse gap-2 border-t border-[#E5E7EB] pt-4 sm:flex-row sm:justify-end sm:gap-3">
                             <button
                                 onClick={() => setShowDeleteModal(false)}
-                                className="rounded-[8px] border border-[#E5E7EB] bg-white px-4 py-2 text-xs font-semibold text-[#262626] hover:bg-[#F5F5F5] transition"
+                                className="w-full rounded-[8px] border border-[#E5E7EB] bg-white px-4 py-2.5 text-xs font-semibold text-[#262626] transition hover:bg-[#F5F5F5] sm:w-auto"
                             >
                                 Batal
                             </button>
                             <button
                                 onClick={handleConfirmDeactivate}
-                                className={`rounded-[8px] px-4 py-2 text-xs font-semibold text-white transition ${selectedUser.is_active ? 'bg-[#D92020] hover:bg-[#B51A1A]' : 'bg-[#1E8E3E] hover:bg-[#166E2E]'}`}
+                                className={`w-full rounded-[8px] px-4 py-2.5 text-xs font-semibold text-white transition sm:w-auto ${selectedUser.is_active ? 'bg-[#D92020] hover:bg-[#B51A1A]' : 'bg-[#1E8E3E] hover:bg-[#166E2E]'}`}
                             >
                                 {selectedUser.is_active ? 'Ya, Nonaktifkan' : 'Ya, Aktifkan'}
                             </button>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     );
