@@ -244,9 +244,7 @@ export default function IPBlocklistIndex({
 
                 {/* Summary cards */}
                 <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-3">
-
-                    {/* Total IP */}
-                    <div className="group relative overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md sm:p-5 last:odd:col-span-2 xl:last:odd:col-span-1">
+                    <div className="group relative overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md sm:p-5">
                         <div className="flex items-start justify-between">
                             <p className="text-xs font-bold uppercase tracking-wider text-[#7F8C8D]">
                                 Total IP Diblokir
@@ -266,8 +264,7 @@ export default function IPBlocklistIndex({
                         </p>
                     </div>
 
-                    {/* Automatic */}
-                    <div className="group relative overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md sm:p-5 last:odd:col-span-2 xl:last:odd:col-span-1">
+                    <div className="group relative overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md sm:p-5">
                         <div className="flex items-start justify-between">
                             <p className="text-xs font-bold uppercase tracking-wider text-[#7F8C8D]">
                                 Blokir Otomatis
@@ -287,8 +284,7 @@ export default function IPBlocklistIndex({
                         </p>
                     </div>
 
-                    {/* Manual */}
-                    <div className="group relative overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md sm:p-5 last:odd:col-span-2 xl:last:odd:col-span-1">
+                    <div className="group relative overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md sm:p-5 col-span-2 xl:col-span-1">
                         <div className="flex items-start justify-between">
                             <p className="text-xs font-bold uppercase tracking-wider text-[#7F8C8D]">
                                 Blokir Manual
