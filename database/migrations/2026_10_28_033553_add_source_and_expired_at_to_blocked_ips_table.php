@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('blocked_ips', function (Blueprint $table) {
             $table->string('source')->default('manual')->after('reason');
-            $table->timestamp('expired_at')->nullable()->after('source');
+            $table->timestamp('expires_at')->nullable()->after('source');
         });
     }
 

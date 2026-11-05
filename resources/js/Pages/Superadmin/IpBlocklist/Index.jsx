@@ -123,7 +123,7 @@ export default function IPBlocklistIndex({ blockedIps }) {
 
                 {/* Summary cards */}
                 <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-3">
-                    <div className="group relative overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md sm:p-5">
+                    <div className="group relative overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md sm:p-5 last:odd:col-span-2 xl:last:odd:col-span-1">
                         <div className="flex items-start justify-between">
                             <p className="text-xs font-bold uppercase tracking-wider text-[#7F8C8D]">Total IP Diblokir</p>
                             <span className="rounded-xl bg-[#FCEBEC] p-2.5 text-[#8B0F14] transition-transform duration-200 group-hover:scale-110"><StatIcon type="shield" /></span>
@@ -132,7 +132,7 @@ export default function IPBlocklistIndex({ blockedIps }) {
                         <p className="mt-1 text-xs text-[#7F8C8D]">Alamat IP dalam daftar blokir aktif</p>
                     </div>
 
-                    <div className="group relative overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md sm:p-5">
+                    <div className="group relative overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md sm:p-5 last:odd:col-span-2 xl:last:odd:col-span-1">
                         <div className="flex items-start justify-between">
                             <p className="text-xs font-bold uppercase tracking-wider text-[#7F8C8D]">Blokir Otomatis</p>
                             <span className="rounded-xl bg-[#FCEBEC] p-2.5 text-[#8B0F14] transition-transform duration-200 group-hover:scale-110"><StatIcon type="zap" /></span>
@@ -141,7 +141,7 @@ export default function IPBlocklistIndex({ blockedIps }) {
                         <p className="mt-1 text-xs text-[#7F8C8D]">Dipicu sistem keamanan</p>
                     </div>
 
-                    <div className="group relative overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md sm:p-5 col-span-2 xl:col-span-1">
+                    <div className="group relative overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md sm:p-5 last:odd:col-span-2 xl:last:odd:col-span-1">
                         <div className="flex items-start justify-between">
                             <p className="text-xs font-bold uppercase tracking-wider text-[#7F8C8D]">Blokir Manual</p>
                             <span className="rounded-xl bg-[#F3F4F6] p-2.5 text-[#626262] transition-transform duration-200 group-hover:scale-110"><StatIcon type="manual" /></span>
@@ -206,7 +206,7 @@ export default function IPBlocklistIndex({ blockedIps }) {
                         <span className="ml-auto text-xs text-[#7F8C8D]">{filteredIPs.length} data</span>
                     </div>
 
-                    {/* MOBILE IP CARDS (Tampil saat layar kecil/split-screen) */}
+                    {/* MOBILE IP CARDS */}
                     <div className="divide-y divide-[#E5E7EB] md:hidden">
                         {filteredIPs.length > 0 ? (
                             filteredIPs.map((item) => {

@@ -19,76 +19,76 @@ export default function SuperadminDashboard({ user, stats, recentActivities = []
                 </div>
             </div>
 
-            {/* 3 Card Statistik */}
-            <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 xl:grid-cols-3">
+            {/* 3 Card Statistik - Menggunakan last:odd:col-span-2 agar jika ganjil baru memanjang */}
+            <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-3">
                 
                 {/* Card 1: Total Pengguna Sistem */}
-                <div className="group relative overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md sm:p-6">
+                <div className="group relative overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md sm:p-6 last:odd:col-span-2 xl:last:odd:col-span-1">
                     <div className="flex items-start justify-between">
                         <div>
                             <p className="text-xs font-bold uppercase tracking-wider text-[#7F8C8D]">Total Pengguna Sistem</p>
-                            <h3 className="mt-2 font-montserrat text-3xl font-extrabold text-[#262626]">
+                            <h3 className="mt-2 font-montserrat text-2xl sm:text-3xl font-extrabold text-[#262626]">
                                 {stats.activeUsers + stats.inactiveUsers}
                             </h3>
                         </div>
-                        <div className="rounded-xl bg-[#FCEBEC] p-3 text-[#8B0F14] transition-transform duration-200 group-hover:scale-110">
-                            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                        <div className="rounded-xl bg-[#FCEBEC] p-2.5 sm:p-3 text-[#8B0F14] transition-transform duration-200 group-hover:scale-110">
+                            <svg className="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                             </svg>
                         </div>
                     </div>
                     
-                    <div className="mt-4 flex items-center gap-2">
-                        <span className="inline-flex items-center gap-1 rounded-full bg-[#1E8E3E]/10 px-2.5 py-0.5 text-[11px] font-semibold text-[#1E8E3E]">
+                    <div className="mt-3 sm:mt-4 flex flex-wrap items-center gap-1.5 sm:gap-2">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-[#1E8E3E]/10 px-2 py-0.5 sm:px-2.5 sm:py-0.5 text-[10px] sm:text-[11px] font-semibold text-[#1E8E3E]">
                             {stats.activeUsers} Aktif
                         </span>
-                        <span className="inline-flex items-center gap-1 rounded-full bg-[#D92020]/10 px-2.5 py-0.5 text-[11px] font-semibold text-[#D92020]">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-[#D92020]/10 px-2 py-0.5 sm:px-2.5 sm:py-0.5 text-[10px] sm:text-[11px] font-semibold text-[#D92020]">
                             {stats.inactiveUsers} Non-aktif
                         </span>
                     </div>
 
-                    <div className="mt-4 flex items-center justify-between border-t border-[#E5E7EB] pt-3 text-xs text-[#7F8C8D]">
+                    <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between border-t border-[#E5E7EB] pt-3 text-[11px] sm:text-xs text-[#7F8C8D] gap-1 sm:gap-0">
                         <span>Admin: <strong className="text-[#262626]">{stats.totalAdmins}</strong></span>
                         <span>Employee: <strong className="text-[#262626]">{stats.totalEmployees}</strong></span>
                     </div>
                 </div>
 
                 {/* Card 2: IP Address Diblokir */}
-                <div className="group relative overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md sm:p-6">
+                <div className="group relative overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md sm:p-6 last:odd:col-span-2 xl:last:odd:col-span-1">
                     <div className="flex items-start justify-between">
                         <div>
                             <p className="text-xs font-bold uppercase tracking-wider text-[#7F8C8D]">IP Address Diblokir</p>
-                            <h3 className="mt-2 font-montserrat text-3xl font-extrabold text-[#D92020]">
+                            <h3 className="mt-2 font-montserrat text-2xl sm:text-3xl font-extrabold text-[#D92020]">
                                 {stats.blockedIPs}
                             </h3>
                         </div>
-                        <div className="rounded-xl bg-[#FCEBEC] p-3 text-[#D92020] transition-transform duration-200 group-hover:scale-110">
-                            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                        <div className="rounded-xl bg-[#FCEBEC] p-2.5 sm:p-3 text-[#D92020] transition-transform duration-200 group-hover:scale-110">
+                            <svg className="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                             </svg>
                         </div>
                     </div>
-                    <p className="mt-4 text-xs font-medium text-[#7F8C8D] bg-[#F9FAFB] rounded-lg p-2 border border-[#E5E7EB]/50">
+                    <p className="mt-3 sm:mt-4 text-[11px] sm:text-xs font-medium text-[#7F8C8D] bg-[#F9FAFB] rounded-lg p-2 border border-[#E5E7EB]/50">
                         Mitigasi aktif serangan brute-force
                     </p>
                 </div>
 
                 {/* Card 3: Audit Logs Hari Ini */}
-                <div className="group relative overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md sm:p-6 sm:col-span-2 xl:col-span-1">
+                <div className="group relative overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md sm:p-6 last:odd:col-span-2 xl:last:odd:col-span-1">
                     <div className="flex items-start justify-between">
                         <div>
                             <p className="text-xs font-bold uppercase tracking-wider text-[#7F8C8D]">Audit Logs Hari Ini</p>
-                            <h3 className="mt-2 font-montserrat text-3xl font-extrabold text-[#262626]">
+                            <h3 className="mt-2 font-montserrat text-2xl sm:text-3xl font-extrabold text-[#262626]">
                                 {stats.auditLogs.toLocaleString('id-ID')}
                             </h3>
                         </div>
-                        <div className="rounded-xl bg-[#E6F4EA] p-3 text-[#1E8E3E] transition-transform duration-200 group-hover:scale-110">
-                            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                        <div className="rounded-xl bg-[#E6F4EA] p-2.5 sm:p-3 text-[#1E8E3E] transition-transform duration-200 group-hover:scale-110">
+                            <svg className="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                             </svg>
                         </div>
                     </div>
-                    <p className="mt-4 text-xs font-medium text-[#1E8E3E] bg-[#F9FAFB] rounded-lg p-2 border border-[#E5E7EB]/50">
+                    <p className="mt-3 sm:mt-4 text-[11px] sm:text-xs font-medium text-[#1E8E3E] bg-[#F9FAFB] rounded-lg p-2 border border-[#E5E7EB]/50">
                         Terekam polimorfik secara real-time
                     </p>
                 </div>

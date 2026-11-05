@@ -24,6 +24,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => RoleMiddleware::class,
             'superadmin.whitelist' => EnsureAuthorizedSuperadmin::class,
         ]);
+        
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
