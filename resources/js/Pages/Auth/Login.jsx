@@ -23,7 +23,7 @@ export default function Login({ status, canResetPassword }) {
 
     return (
         <>
-            <Head title="Login Pegawai" />
+            <Head title="Login" />
 
             <div className="flex min-h-screen flex-col justify-center bg-[#F5F5F5] font-dmsans text-[#262626] px-4 py-12 sm:px-6 lg:px-8 selection:bg-[#8B0F14] selection:text-white">
                 
@@ -53,7 +53,7 @@ export default function Login({ status, canResetPassword }) {
                             </Link>
 
                             <h2 className="mt-6 font-montserrat text-xl font-bold text-[#262626]">
-                                Login Portal Pegawai
+                                Login Portal
                             </h2>
                             <p className="mt-1.5 text-xs text-[#7F8C8D]">
                                 Masukkan kredensial username atau email resmi untuk mengelola validasi dokumen.

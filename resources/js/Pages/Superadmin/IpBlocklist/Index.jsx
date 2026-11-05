@@ -1,7 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Head, useForm, router } from '@inertiajs/react';
 import SuperadminLayout from '@/Layouts/SuperadminLayout';
+
+const HARDCODED_REASON_OPTIONS = [
+    'Percobaan Masuk Gagal Berkali-kali (Brute Force)',
+    'Aktivitas Trafik Berlebihan (DDoS / Flooding)',
+    'Percobaan Akses Area Terlarang (Unauthorized Access)',
+    'Pengiriman Kode/Perintah Berbahaya (Injection / XSS)',
+    'Akses dari Jaringan Anonim/Berisiko (Proxy / VPN Mencurigakan)',
+    'Penggunaan Bot atau Alat Otomatis (Web Scraping / Automation)',
+    'Pemindaian Celah Keamanan (Port / Vulnerability Scanning)',
+    'Pengiriman Pesan/Data Massal (Spamming)',
+    'Reputasi IP Buruk (Global Cyber Threat List)',
+    'Pemblokiran Manual oleh Pengelola Sistem (Kebijakan Internal)',
+];
 
 function StatIcon({ type }) {
     const common = {
@@ -48,35 +61,137 @@ function StatIcon({ type }) {
     );
 }
 
-export default function IPBlocklistIndex({ blockedIps }) {
+// Komponen Custom Dropdown dengan Animasi Meluncur Turun (Slide-Down) & Mobile Friendly
+function CustomSelect({ options, value, onChange, placeholder }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const dropdownRef = useRef(null);
+
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsOpen(false);
+            }
+        }
+        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('touchstart', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('touchstart', handleClickOutside);
+        };
+    }, []);
+
+    return (
+        <div className="relative mt-1 w-full" ref={dropdownRef}>
+            <button
+                type="button"
+                onClick={() => setIsOpen(!isOpen)}
+                className={`flex min-h-[42px] w-full items-center justify-between rounded-lg border bg-white px-3.5 py-2.5 text-xs transition-colors duration-150 focus:outline-none ${
+                    isOpen
+                        ? 'border-[#8B0F14] ring-1 ring-[#8B0F14]'
+                        : 'border-[#E5E7EB] hover:border-[#D1D5DB]'
+                } ${value ? 'font-medium text-[#262626]' : 'text-[#9CA3AF]'}`}
+            >
+                <span className="truncate text-left leading-normal">{value || placeholder}</span>
+                <svg
+                    className={`ml-2 h-4 w-4 shrink-0 text-[#7F8C8D] transition-transform duration-200 ease-out ${
+                        isOpen ? 'rotate-180 text-[#8B0F14]' : 'rotate-0'
+                    }`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+            </button>
+
+            {/* Menu Options dengan animasi Slide Down murni tanpa delay */}
+            <div
+                className={`absolute left-0 right-0 z-[60] mt-1.5 max-h-52 overflow-y-auto overscroll-contain rounded-xl border border-[#E5E7EB] bg-white py-1.5 shadow-xl origin-top transition-all duration-200 ease-out ${
+                    isOpen
+                        ? 'opacity-100 translate-y-0 scale-y-100 pointer-events-auto'
+                        : 'opacity-0 -translate-y-2 scale-y-95 pointer-events-none'
+                }`}
+            >
+                {options.length > 0 ? (
+                    options.map((option) => (
+                        <button
+                            key={option}
+                            type="button"
+                            onClick={() => {
+                                onChange(option);
+                                setIsOpen(false);
+                            }}
+                            className={`flex min-h-[40px] w-full items-center justify-between px-3.5 py-2.5 text-left text-xs transition-colors duration-100 hover:bg-[#FCEBEC] hover:text-[#8B0F14] active:bg-[#FCEBEC] ${
+                                value === option
+                                    ? 'bg-[#FCEBEC]/70 font-semibold text-[#8B0F14]'
+                                    : 'text-[#262626]'
+                            }`}
+                        >
+                            <span className="pr-2 leading-relaxed">{option}</span>
+                            {value === option && (
+                                <svg
+                                    className="h-4 w-4 shrink-0 text-[#8B0F14]"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                    strokeWidth={2.5}
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                            )}
+                        </button>
+                    ))
+                ) : (
+                    <div className="px-3.5 py-3 text-xs text-[#7F8C8D]">
+                        Belum ada pilihan alasan.
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
+
+export default function IPBlocklistIndex({
+    blockedIps,
+    reasonOptions = [],
+}) {
     const [search, setSearch] = useState('');
     const [activeFilter, setActiveFilter] = useState('Semua');
     const [showModal, setShowModal] = useState(false);
     const [selectedUnblockIP, setSelectedUnblockIP] = useState(null);
 
-    // Inertia form untuk tambah IP blokir manual
+    const availableReasons = reasonOptions.length > 0 ? reasonOptions : HARDCODED_REASON_OPTIONS;
+
     const { data, setData, post, processing, reset, errors } = useForm({
         ip_address: '',
         reason: '',
     });
 
-    const safeBlockedIps = blockedIps && Array.isArray(blockedIps.data) ? blockedIps.data : [];
+    const safeBlockedIps = blockedIps && Array.isArray(blockedIps.data)
+        ? blockedIps.data
+        : [];
 
-    // Filter data di sisi frontend berdasarkan pencarian & sumber
     const filteredIPs = safeBlockedIps.filter((item) => {
         const keyword = search.trim().toLowerCase();
+
         const matchesSearch =
             item.ip_address.toLowerCase().includes(keyword) ||
             (item.reason && item.reason.toLowerCase().includes(keyword));
-        
+
         const sourceLabel = item.source === 'automatic' ? 'Otomatis' : 'Manual';
         const matchesFilter = activeFilter === 'Semua' || sourceLabel === activeFilter;
 
         return matchesSearch && matchesFilter;
     });
 
-    const automaticCount = safeBlockedIps.filter((item) => item.source === 'automatic').length;
-    const manualCount = safeBlockedIps.filter((item) => item.source === 'manual').length;
+    const automaticCount = safeBlockedIps.filter(
+        (item) => item.source === 'automatic'
+    ).length;
+
+    const manualCount = safeBlockedIps.filter(
+        (item) => item.source === 'manual'
+    ).length;
 
     const closeModal = () => {
         setShowModal(false);
@@ -85,6 +200,7 @@ export default function IPBlocklistIndex({ blockedIps }) {
 
     const handleSubmit = (event) => {
         event.preventDefault();
+
         post(route('superadmin.ip-blocklist.store'), {
             preserveScroll: true,
             onSuccess: () => {
@@ -96,12 +212,15 @@ export default function IPBlocklistIndex({ blockedIps }) {
     const confirmUnblockIP = () => {
         if (!selectedUnblockIP) return;
 
-        router.delete(route('superadmin.ip-blocklist.destroy', selectedUnblockIP.id), {
-            preserveScroll: true,
-            onSuccess: () => {
-                setSelectedUnblockIP(null);
-            },
-        });
+        router.delete(
+            route('superadmin.ip-blocklist.destroy', selectedUnblockIP.id),
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setSelectedUnblockIP(null);
+                },
+            }
+        );
     };
 
     return (
@@ -109,12 +228,14 @@ export default function IPBlocklistIndex({ blockedIps }) {
             <Head title="IP Blocklist" />
 
             <div className="w-full min-w-0 space-y-5 sm:space-y-7">
+
                 {/* Page heading */}
                 <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                     <div>
                         <h1 className="mt-1 font-montserrat text-2xl font-extrabold text-[#262626] sm:text-3xl">
                             IP Blocklist
                         </h1>
+
                         <p className="mt-1 max-w-2xl text-sm leading-6 text-[#7F8C8D]">
                             Kelola alamat IP yang diblokir untuk membantu melindungi sistem dari akses mencurigakan.
                         </p>
@@ -123,49 +244,99 @@ export default function IPBlocklistIndex({ blockedIps }) {
 
                 {/* Summary cards */}
                 <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-3">
-                    <div className="group relative overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md sm:p-5">
+
+                    {/* Total IP */}
+                    <div className="group relative overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md sm:p-5 last:odd:col-span-2 xl:last:odd:col-span-1">
                         <div className="flex items-start justify-between">
-                            <p className="text-xs font-bold uppercase tracking-wider text-[#7F8C8D]">Total IP Diblokir</p>
-                            <span className="rounded-xl bg-[#FCEBEC] p-2.5 text-[#8B0F14] transition-transform duration-200 group-hover:scale-110"><StatIcon type="shield" /></span>
+                            <p className="text-xs font-bold uppercase tracking-wider text-[#7F8C8D]">
+                                Total IP Diblokir
+                            </p>
+
+                            <span className="rounded-xl bg-[#FCEBEC] p-2.5 text-[#8B0F14] transition-transform duration-200 group-hover:scale-110">
+                                <StatIcon type="shield" />
+                            </span>
                         </div>
-                        <p className="mt-2 font-montserrat text-2xl font-extrabold text-[#262626] sm:mt-3 sm:text-3xl">{blockedIps?.total ?? safeBlockedIps.length}</p>
-                        <p className="mt-1 text-xs text-[#7F8C8D]">Alamat IP dalam daftar blokir aktif</p>
+
+                        <p className="mt-2 font-montserrat text-2xl font-extrabold text-[#262626] sm:mt-3 sm:text-3xl">
+                            {blockedIps?.total ?? safeBlockedIps.length}
+                        </p>
+
+                        <p className="mt-1 text-xs text-[#7F8C8D]">
+                            Alamat IP dalam daftar blokir aktif
+                        </p>
                     </div>
 
-                    <div className="group relative overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md sm:p-5">
+                    {/* Automatic */}
+                    <div className="group relative overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md sm:p-5 last:odd:col-span-2 xl:last:odd:col-span-1">
                         <div className="flex items-start justify-between">
-                            <p className="text-xs font-bold uppercase tracking-wider text-[#7F8C8D]">Blokir Otomatis</p>
-                            <span className="rounded-xl bg-[#FCEBEC] p-2.5 text-[#8B0F14] transition-transform duration-200 group-hover:scale-110"><StatIcon type="zap" /></span>
+                            <p className="text-xs font-bold uppercase tracking-wider text-[#7F8C8D]">
+                                Blokir Otomatis
+                            </p>
+
+                            <span className="rounded-xl bg-[#FCEBEC] p-2.5 text-[#8B0F14] transition-transform duration-200 group-hover:scale-110">
+                                <StatIcon type="zap" />
+                            </span>
                         </div>
-                        <p className="mt-2 font-montserrat text-2xl font-extrabold text-[#D92020] sm:mt-3 sm:text-3xl">{automaticCount}</p>
-                        <p className="mt-1 text-xs text-[#7F8C8D]">Dipicu sistem keamanan</p>
+
+                        <p className="mt-2 font-montserrat text-2xl font-extrabold text-[#D92020] sm:mt-3 sm:text-3xl">
+                            {automaticCount}
+                        </p>
+
+                        <p className="mt-1 text-xs text-[#7F8C8D]">
+                            Dipicu sistem keamanan
+                        </p>
                     </div>
 
-                    <div className="group relative overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md sm:p-5 col-span-2 xl:col-span-1">
+                    {/* Manual */}
+                    <div className="group relative overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md sm:p-5 last:odd:col-span-2 xl:last:odd:col-span-1">
                         <div className="flex items-start justify-between">
-                            <p className="text-xs font-bold uppercase tracking-wider text-[#7F8C8D]">Blokir Manual</p>
-                            <span className="rounded-xl bg-[#F3F4F6] p-2.5 text-[#626262] transition-transform duration-200 group-hover:scale-110"><StatIcon type="manual" /></span>
+                            <p className="text-xs font-bold uppercase tracking-wider text-[#7F8C8D]">
+                                Blokir Manual
+                            </p>
+
+                            <span className="rounded-xl bg-[#F3F4F6] p-2.5 text-[#626262] transition-transform duration-200 group-hover:scale-110">
+                                <StatIcon type="manual" />
+                            </span>
                         </div>
-                        <p className="mt-2 font-montserrat text-2xl font-extrabold text-[#262626] sm:mt-3 sm:text-3xl">{manualCount}</p>
-                        <p className="mt-1 text-xs text-[#7F8C8D]">Ditambahkan administrator</p>
+
+                        <p className="mt-2 font-montserrat text-2xl font-extrabold text-[#262626] sm:mt-3 sm:text-3xl">
+                            {manualCount}
+                        </p>
+
+                        <p className="mt-1 text-xs text-[#7F8C8D]">
+                            Ditambahkan administrator
+                        </p>
                     </div>
                 </div>
 
                 {/* Main table panel */}
                 <section className="rounded-xl border border-[#E5E7EB] bg-white shadow-sm">
+
                     {/* Header Tabel & Search Bar Responsif */}
                     <div className="flex min-w-0 flex-col gap-4 border-b border-[#E5E7EB] p-4 lg:flex-row lg:items-center lg:justify-between lg:px-6">
                         <div className="min-w-0">
-                            <h2 className="font-montserrat text-base font-bold text-[#262626]">Daftar IP yang Diblokir</h2>
-                            <p className="mt-1 text-xs text-[#7F8C8D]">Pantau alasan, sumber, dan masa berlaku pemblokiran.</p>
+                            <h2 className="font-montserrat text-base font-bold text-[#262626]">
+                                Daftar IP yang Diblokir
+                            </h2>
+
+                            <p className="mt-1 text-xs text-[#7F8C8D]">
+                                Pantau alasan, sumber, dan masa berlaku pemblokiran.
+                            </p>
                         </div>
 
-                        {/* Search bar responsif */}
+                        {/* Search bar */}
                         <div className="relative w-full min-w-0 lg:flex-1 lg:max-w-md">
-                            <svg className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#7F8C8D]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <svg
+                                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#7F8C8D]"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                strokeWidth={2}
+                            >
                                 <circle cx="11" cy="11" r="7" />
                                 <path strokeLinecap="round" strokeLinejoin="round" d="m16 16 4 4" />
                             </svg>
+
                             <input
                                 type="text"
                                 value={search}
@@ -181,13 +352,21 @@ export default function IPBlocklistIndex({ blockedIps }) {
                             onClick={() => setShowModal(true)}
                             className="inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-lg bg-[#8B0F14] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#6B0A0F] focus:outline-none focus:ring-2 focus:ring-[#8B0F14] focus:ring-offset-2 lg:w-auto"
                         >
-                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <svg
+                                className="h-4 w-4"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                strokeWidth={2}
+                            >
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14m-7-7h14" />
                             </svg>
+
                             Blokir IP
-                        </button>                        
+                        </button>
                     </div>
 
+                    {/* Filter */}
                     <div className="flex flex-wrap items-center gap-2 px-4 pt-3 sm:px-6 sm:pt-4">
                         {['Semua', 'Manual', 'Otomatis'].map((filter) => (
                             <button
@@ -203,48 +382,85 @@ export default function IPBlocklistIndex({ blockedIps }) {
                                 {filter}
                             </button>
                         ))}
-                        <span className="ml-auto text-xs text-[#7F8C8D]">{filteredIPs.length} data</span>
+
+                        <span className="ml-auto text-xs text-[#7F8C8D]">
+                            {filteredIPs.length} data
+                        </span>
                     </div>
 
-                    {/* MOBILE IP CARDS (Tampil saat layar kecil/split-screen) */}
+                    {/* MOBILE IP CARDS */}
                     <div className="divide-y divide-[#E5E7EB] md:hidden">
                         {filteredIPs.length > 0 ? (
                             filteredIPs.map((item) => {
-                                const sourceLabel = item.source === 'automatic' ? 'Otomatis' : 'Manual';
+                                const sourceLabel = item.source === 'automatic'
+                                    ? 'Otomatis'
+                                    : 'Manual';
+
                                 return (
                                     <article key={item.id} className="space-y-3 p-4">
                                         <div className="flex min-w-0 items-start justify-between gap-3">
                                             <div className="flex min-w-0 items-center gap-2.5">
                                                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#FCEBEC] text-[#8B0F14]">
-                                                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                                                    <svg
+                                                        className="h-4 w-4"
+                                                        fill="none"
+                                                        viewBox="0 0 24 24"
+                                                        stroke="currentColor"
+                                                        strokeWidth={1.8}
+                                                    >
                                                         <circle cx="12" cy="12" r="9" />
                                                         <path strokeLinecap="round" d="m5.6 5.6 12.8 12.8M18.4 5.6 5.6 18.4" />
                                                     </svg>
                                                 </span>
-                                                <span className="font-mono text-xs font-semibold text-[#262626] break-all">{item.ip_address}</span>
+
+                                                <span className="font-mono text-xs font-semibold text-[#262626] break-all">
+                                                    {item.ip_address}
+                                                </span>
                                             </div>
-                                            <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold shrink-0 ${item.source === 'automatic' ? 'bg-[#FCEBEC] text-[#8B0F14]' : 'bg-[#F3F4F6] text-[#525252]'}`}>
-                                                <span className={`h-1.5 w-1.5 rounded-full ${item.source === 'automatic' ? 'bg-[#D92020]' : 'bg-[#737373]'}`} />
+
+                                            <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold shrink-0 ${
+                                                item.source === 'automatic'
+                                                    ? 'bg-[#FCEBEC] text-[#8B0F14]'
+                                                    : 'bg-[#F3F4F6] text-[#525252]'
+                                            }`}>
+                                                <span className={`h-1.5 w-1.5 rounded-full ${
+                                                    item.source === 'automatic'
+                                                        ? 'bg-[#D92020]'
+                                                        : 'bg-[#737373]'
+                                                }`} />
+
                                                 {sourceLabel}
                                             </span>
                                         </div>
 
                                         <p className="text-xs text-[#626262] break-words">
-                                            <span className="font-semibold text-[#7F8C8D]">Alasan: </span>
+                                            <span className="font-semibold text-[#7F8C8D]">
+                                                Alasan:{' '}
+                                            </span>
                                             {item.reason || '-'}
                                         </p>
 
                                         <dl className="grid grid-cols-2 gap-3 rounded-lg bg-[#F9FAFB] p-3 text-xs">
                                             <div className="min-w-0">
-                                                <dt className="text-[10px] text-[#7F8C8D]">Waktu Diblokir</dt>
+                                                <dt className="text-[10px] text-[#7F8C8D]">
+                                                    Waktu Diblokir
+                                                </dt>
+
                                                 <dd className="mt-1 font-mono text-[11px] text-[#626262]">
                                                     {new Date(item.created_at).toLocaleString('id-ID')}
                                                 </dd>
                                             </div>
+
                                             <div className="min-w-0">
-                                                <dt className="text-[10px] text-[#7F8C8D]">Kedaluwarsa</dt>
+                                                <dt className="text-[10px] text-[#7F8C8D]">
+                                                    Kedaluwarsa
+                                                </dt>
+
                                                 <dd className="mt-1 font-mono text-[11px] text-[#626262]">
-                                                    {item.expires_at ? new Date(item.expires_at).toLocaleString('id-ID') : <span className="font-medium text-[#8B0F14]">Permanen</span>}
+                                                    {item.expires_at
+                                                        ? new Date(item.expires_at).toLocaleString('id-ID')
+                                                        : <span className="font-medium text-[#8B0F14]">Permanen</span>
+                                                    }
                                                 </dd>
                                             </div>
                                         </dl>
@@ -263,8 +479,13 @@ export default function IPBlocklistIndex({ blockedIps }) {
                             })
                         ) : (
                             <div className="px-4 py-10 text-center">
-                                <p className="text-sm font-semibold text-[#262626]">Tidak ada IP ditemukan</p>
-                                <p className="mt-1 text-xs text-[#7F8C8D]">Coba ubah kata kunci atau filter pencarian.</p>
+                                <p className="text-sm font-semibold text-[#262626]">
+                                    Tidak ada IP ditemukan
+                                </p>
+
+                                <p className="mt-1 text-xs text-[#7F8C8D]">
+                                    Coba ubah kata kunci atau filter pencarian.
+                                </p>
                             </div>
                         )}
                     </div>
@@ -274,57 +495,110 @@ export default function IPBlocklistIndex({ blockedIps }) {
                         <table className="w-full min-w-[850px] border-collapse text-left">
                             <thead>
                                 <tr className="border-y border-[#E5E7EB] bg-[#F9FAFB]">
-                                    <th className="px-6 py-3.5 text-[11px] font-bold uppercase tracking-wide text-[#7F8C8D]">Alamat IP</th>
-                                    <th className="px-6 py-3.5 text-[11px] font-bold uppercase tracking-wide text-[#7F8C8D]">Alasan Pemblokiran</th>
-                                    <th className="px-6 py-3.5 text-[11px] font-bold uppercase tracking-wide text-[#7F8C8D]">Sumber</th>
-                                    <th className="px-6 py-3.5 text-[11px] font-bold uppercase tracking-wide text-[#7F8C8D]">Waktu Diblokir</th>
-                                    <th className="px-6 py-3.5 text-[11px] font-bold uppercase tracking-wide text-[#7F8C8D]">Kedaluwarsa</th>
-                                    <th className="px-6 py-3.5 text-right text-[11px] font-bold uppercase tracking-wide text-[#7F8C8D]">Aksi</th>
+                                    <th className="px-6 py-3.5 text-[11px] font-bold uppercase tracking-wide text-[#7F8C8D]">
+                                        Alamat IP
+                                    </th>
+                                    <th className="px-6 py-3.5 text-[11px] font-bold uppercase tracking-wide text-[#7F8C8D]">
+                                        Alasan Pemblokiran
+                                    </th>
+                                    <th className="px-6 py-3.5 text-[11px] font-bold uppercase tracking-wide text-[#7F8C8D]">
+                                        Sumber
+                                    </th>
+                                    <th className="px-6 py-3.5 text-[11px] font-bold uppercase tracking-wide text-[#7F8C8D]">
+                                        Waktu Diblokir
+                                    </th>
+                                    <th className="px-6 py-3.5 text-[11px] font-bold uppercase tracking-wide text-[#7F8C8D]">
+                                        Kedaluwarsa
+                                    </th>
+                                    <th className="px-6 py-3.5 text-right text-[11px] font-bold uppercase tracking-wide text-[#7F8C8D]">
+                                        Aksi
+                                    </th>
                                 </tr>
                             </thead>
+
                             <tbody className="divide-y divide-[#E5E7EB]">
-                                {filteredIPs.length > 0 ? filteredIPs.map((item) => {
-                                    const sourceLabel = item.source === 'automatic' ? 'Otomatis' : 'Manual';
-                                    return (
-                                        <tr key={item.id} className="transition hover:bg-[#FCFCFC]">
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center gap-2.5">
-                                                    <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FCEBEC] text-[#8B0F14]">
-                                                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                                                            <circle cx="12" cy="12" r="9" />
-                                                            <path strokeLinecap="round" d="m5.6 5.6 12.8 12.8M18.4 5.6 5.6 18.4" />
-                                                        </svg>
+                                {filteredIPs.length > 0 ? (
+                                    filteredIPs.map((item) => {
+                                        const sourceLabel = item.source === 'automatic'
+                                            ? 'Otomatis'
+                                            : 'Manual';
+
+                                        return (
+                                            <tr key={item.id} className="transition hover:bg-[#FCFCFC]">
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center gap-2.5">
+                                                        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FCEBEC] text-[#8B0F14]">
+                                                            <svg
+                                                                className="h-4 w-4"
+                                                                fill="none"
+                                                                viewBox="0 0 24 24"
+                                                                stroke="currentColor"
+                                                                strokeWidth={1.8}
+                                                            >
+                                                                <circle cx="12" cy="12" r="9" />
+                                                                <path strokeLinecap="round" d="m5.6 5.6 12.8 12.8M18.4 5.6 5.6 18.4" />
+                                                            </svg>
+                                                        </span>
+
+                                                        <span className="font-mono text-xs font-semibold text-[#262626]">
+                                                            {item.ip_address}
+                                                        </span>
+                                                    </div>
+                                                </td>
+
+                                                <td className="px-6 py-4 text-xs text-[#626262]">
+                                                    {item.reason || '-'}
+                                                </td>
+
+                                                <td className="px-6 py-4">
+                                                    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold ${
+                                                        item.source === 'automatic'
+                                                            ? 'bg-[#FCEBEC] text-[#8B0F14]'
+                                                            : 'bg-[#F3F4F6] text-[#525252]'
+                                                    }`}>
+                                                        <span className={`h-1.5 w-1.5 rounded-full ${
+                                                            item.source === 'automatic'
+                                                                ? 'bg-[#D92020]'
+                                                                : 'bg-[#737373]'
+                                                        }`} />
+
+                                                        {sourceLabel}
                                                     </span>
-                                                    <span className="font-mono text-xs font-semibold text-[#262626]">{item.ip_address}</span>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 text-xs text-[#626262]">{item.reason || '-'}</td>
-                                            <td className="px-6 py-4">
-                                                <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold ${item.source === 'automatic' ? 'bg-[#FCEBEC] text-[#8B0F14]' : 'bg-[#F3F4F6] text-[#525252]'}`}>
-                                                    <span className={`h-1.5 w-1.5 rounded-full ${item.source === 'automatic' ? 'bg-[#D92020]' : 'bg-[#737373]'}`} />
-                                                    {sourceLabel}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 text-xs text-[#626262]">{new Date(item.created_at).toLocaleString('id-ID')}</td>
-                                            <td className="px-6 py-4 text-xs text-[#626262]">
-                                                {item.expires_at ? new Date(item.expires_at).toLocaleString('id-ID') : <span className="font-medium text-[#8B0F14]">Permanen</span>}
-                                            </td>
-                                            <td className="px-6 py-4 text-right">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setSelectedUnblockIP(item)}
-                                                    className="inline-flex items-center gap-1.5 rounded-lg border border-[#F2C9CB] px-3 py-2 text-[11px] font-semibold text-[#8B0F14] transition hover:bg-[#FCEBEC]"
-                                                >
-                                                    Buka blokir
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    );
-                                }) : (
+                                                </td>
+
+                                                <td className="px-6 py-4 text-xs text-[#626262]">
+                                                    {new Date(item.created_at).toLocaleString('id-ID')}
+                                                </td>
+
+                                                <td className="px-6 py-4 text-xs text-[#626262]">
+                                                    {item.expires_at
+                                                        ? new Date(item.expires_at).toLocaleString('id-ID')
+                                                        : <span className="font-medium text-[#8B0F14]">Permanen</span>
+                                                    }
+                                                </td>
+
+                                                <td className="px-6 py-4 text-right">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setSelectedUnblockIP(item)}
+                                                        className="inline-flex items-center gap-1.5 rounded-lg border border-[#F2C9CB] px-3 py-2 text-[11px] font-semibold text-[#8B0F14] transition hover:bg-[#FCEBEC]"
+                                                    >
+                                                        Buka blokir
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })
+                                ) : (
                                     <tr>
                                         <td colSpan="6" className="px-6 py-14 text-center">
-                                            <p className="text-sm font-semibold text-[#262626]">Tidak ada IP ditemukan</p>
-                                            <p className="mt-1 text-xs text-[#7F8C8D]">Coba ubah kata kunci atau filter pencarian.</p>
+                                            <p className="text-sm font-semibold text-[#262626]">
+                                                Tidak ada IP ditemukan
+                                            </p>
+
+                                            <p className="mt-1 text-xs text-[#7F8C8D]">
+                                                Coba ubah kata kunci atau filter pencarian.
+                                            </p>
                                         </td>
                                     </tr>
                                 )}
@@ -338,30 +612,57 @@ export default function IPBlocklistIndex({ blockedIps }) {
             {showModal && createPortal(
                 <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
                     <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
-                        <h2 className="text-lg font-bold text-[#262626]">Blokir Alamat IP Manual</h2>
+                        <h2 className="text-lg font-bold text-[#262626]">
+                            Blokir Alamat IP Manual
+                        </h2>
+
                         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
                             <div>
-                                <label className="block text-xs font-semibold text-[#262626]">Alamat IP</label>
+                                <label className="block text-xs font-semibold text-[#262626]">
+                                    Alamat IP
+                                </label>
+
                                 <input
                                     type="text"
                                     value={data.ip_address}
                                     onChange={(e) => setData('ip_address', e.target.value)}
                                     placeholder="Contoh: 192.168.1.50"
-                                    className="mt-1 w-full rounded-lg border border-[#E5E7EB] px-3 py-2 text-xs text-[#262626] focus:border-[#8B0F14] focus:ring-[#8B0F14]"
+                                    className="mt-1 w-full rounded-lg border border-[#E5E7EB] px-3.5 py-2.5 text-xs text-[#262626] focus:border-[#8B0F14] focus:ring-[#8B0F14]"
                                 />
-                                {errors.ip_address && <p className="mt-1 text-xs text-red-600">{errors.ip_address}</p>}
+
+                                {errors.ip_address && (
+                                    <p className="mt-1 text-xs text-red-600">
+                                        {errors.ip_address}
+                                    </p>
+                                )}
                             </div>
+
+                            {/* Dropdown Custom dengan Animasi Meluncur Turun */}
                             <div>
-                                <label className="block text-xs font-semibold text-[#262626]">Alasan Pemblokiran</label>
-                                <textarea
+                                <label className="block text-xs font-semibold text-[#262626]">
+                                    Alasan Pemblokiran
+                                </label>
+
+                                <CustomSelect
+                                    options={availableReasons}
                                     value={data.reason}
-                                    onChange={(e) => setData('reason', e.target.value)}
-                                    placeholder="Masukkan alasan..."
-                                    className="mt-1 w-full rounded-lg border border-[#E5E7EB] px-3 py-2 text-xs text-[#262626] focus:border-[#8B0F14] focus:ring-[#8B0F14]"
-                                    rows="3"
+                                    onChange={(selectedReason) => setData('reason', selectedReason)}
+                                    placeholder="Pilih alasan pemblokiran"
                                 />
-                                {errors.reason && <p className="mt-1 text-xs text-red-600">{errors.reason}</p>}
+
+                                {errors.reason && (
+                                    <p className="mt-1 text-xs text-red-600">
+                                        {errors.reason}
+                                    </p>
+                                )}
+
+                                {availableReasons.length === 0 && (
+                                    <p className="mt-1 text-xs text-[#7F8C8D]">
+                                        Belum ada pilihan alasan. Pastikan data alasan sudah tersedia.
+                                    </p>
+                                )}
                             </div>
+
                             <div className="flex justify-end gap-2 pt-2">
                                 <button
                                     type="button"
@@ -370,10 +671,11 @@ export default function IPBlocklistIndex({ blockedIps }) {
                                 >
                                     Batal
                                 </button>
+
                                 <button
                                     type="submit"
-                                    disabled={processing}
-                                    className="rounded-lg bg-[#8B0F14] px-4 py-2 text-xs font-semibold text-white hover:bg-[#6B0A0F]"
+                                    disabled={processing || !data.reason || availableReasons.length === 0}
+                                    className="rounded-lg bg-[#8B0F14] px-4 py-2 text-xs font-semibold text-white hover:bg-[#6B0A0F] disabled:cursor-not-allowed disabled:opacity-50"
                                 >
                                     Simpan & Blokir
                                 </button>
@@ -388,10 +690,18 @@ export default function IPBlocklistIndex({ blockedIps }) {
             {selectedUnblockIP && createPortal(
                 <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
                     <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
-                        <h2 className="text-lg font-bold text-[#262626]">Yakin ingin membuka blokir IP?</h2>
+                        <h2 className="text-lg font-bold text-[#262626]">
+                            Yakin ingin membuka blokir IP?
+                        </h2>
+
                         <p className="mt-1 text-xs text-[#7F8C8D]">
-                            Alamat IP <span className="font-mono font-semibold text-[#262626]">{selectedUnblockIP.ip_address}</span> akan kembali diizinkan mengakses sistem.
+                            Alamat IP{' '}
+                            <span className="font-mono font-semibold text-[#262626]">
+                                {selectedUnblockIP.ip_address}
+                            </span>{' '}
+                            akan kembali diizinkan mengakses sistem.
                         </p>
+
                         <div className="mt-6 flex justify-end gap-2">
                             <button
                                 type="button"
@@ -400,6 +710,7 @@ export default function IPBlocklistIndex({ blockedIps }) {
                             >
                                 Batal
                             </button>
+
                             <button
                                 type="button"
                                 onClick={confirmUnblockIP}

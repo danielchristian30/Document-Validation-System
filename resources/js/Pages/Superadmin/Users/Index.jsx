@@ -315,9 +315,6 @@ export default function UsersIndex({
             {/* HEADER PAGE */}
             <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                    {/* <span className="rounded-full bg-[#FCEBEC] px-3.5 py-1 text-xs font-semibold text-[#8B0F14]">
-                        Modul Superadmin
-                    </span> */}
                     <h1 className="mt-2 font-montserrat text-2xl font-extrabold text-[#262626] sm:text-3xl">
                         Manajemen Pengguna
                     </h1>
@@ -329,7 +326,7 @@ export default function UsersIndex({
 
             {/* STATISTIC CARDS */}
             <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
-                <div className="group relative overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md sm:p-5">
+                <div className="group relative overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md sm:p-5 last:odd:col-span-2 lg:last:odd:col-span-1">
                     <div className="flex items-start justify-between">
                         <p className="text-xs font-bold uppercase tracking-wider text-[#7F8C8D]">Total Pengguna</p>
                         <span className="rounded-xl bg-[#FCEBEC] p-2.5 text-[#8B0F14] transition-transform duration-200 group-hover:scale-110"><StatIcon type="users" /></span>
@@ -338,7 +335,7 @@ export default function UsersIndex({
                     <p className="mt-1 text-xs text-[#7F8C8D]">Seluruh akun terdaftar</p>
                 </div>
 
-                <div className="group relative overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md sm:p-5">
+                <div className="group relative overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md sm:p-5 last:odd:col-span-2 lg:last:odd:col-span-1">
                     <div className="flex items-start justify-between">
                         <p className="text-xs font-bold uppercase tracking-wider text-[#7F8C8D]">User Admin</p>
                         <span className="rounded-xl bg-[#FFF4E5] p-2.5 text-[#B7791F] transition-transform duration-200 group-hover:scale-110"><StatIcon type="admin" /></span>
@@ -347,7 +344,7 @@ export default function UsersIndex({
                     <p className="mt-1 text-xs text-[#7F8C8D]">Hak akses admin</p>
                 </div>
 
-                <div className="group relative overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md sm:p-5 col-span-2 lg:col-span-1">
+                <div className="group relative overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md sm:p-5 last:odd:col-span-2 lg:last:odd:col-span-1">
                     <div className="flex items-start justify-between">
                         <p className="text-xs font-bold uppercase tracking-wider text-[#7F8C8D]">User Pegawai</p>
                         <span className="rounded-xl bg-[#F3F4F6] p-2.5 text-[#626262] transition-transform duration-200 group-hover:scale-110"><StatIcon type="employee" /></span>

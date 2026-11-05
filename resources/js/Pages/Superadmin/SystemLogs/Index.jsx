@@ -257,14 +257,14 @@ function SummaryIcon({ type }) {
     }
 
     if (type === 'admin') {
-        return <svg {...common}><circle cx="12" cy="8" r="4" /><path d="M5 21v-2a7 7 0 0114 0v2" /></svg>;
+        return <svg {...common}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>;
     }
 
     if (type === 'employee') {
-        return <svg {...common}><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20v-1.5a6.5 6.5 0 0111-4.6M16 11a3 3 0 100-6m2 9a5 5 0 013.5 4.8V20" /></svg>;
+        return <svg {...common}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>;
     }
 
-    return <svg {...common}><path d="M4 5h16v14H4z" /><path d="M8 9h8M8 13h8M8 17h4" /></svg>;
+    return <svg {...common}><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>;
 }
 
 function DetailIcon() {
@@ -403,24 +403,128 @@ export default function SystemLogsIndex() {
     };
 
     return (
-        <SuperadminLayout>
+        <div className="min-h-full w-full min-w-0 space-y-5 sm:space-y-6">
             <Head title="System Logs - SIVALDEN" />
 
-            <div className="w-full min-w-0 space-y-5 sm:space-y-7">
-                {/* Header */}
-                <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-                    <div>
-                        <span className="rounded-full bg-[#FCEBEC] px-3.5 py-1 text-xs font-semibold text-[#8B0F14]">Modul Audit</span>
-                        <h1 className="mt-2 font-montserrat text-2xl font-extrabold text-[#262626] sm:text-3xl">System Logs</h1>
-                        <p className="mt-1 max-w-3xl text-sm leading-6 text-[#7F8C8D]">
-                            Telusuri catatan aktivitas Admin dan Pegawai, termasuk waktu, event, pelaku, alamat IP, user agent, dan properties dari activity log.
-                        </p>
+            {/* HEADER PAGE */}
+            <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                    <h1 className="mt-2 font-montserrat text-2xl font-extrabold text-[#262626] sm:text-3xl">
+                        System Logs
+                    </h1>
+                    <p className="mt-1 max-w-3xl text-sm leading-6 text-[#7F8C8D]">
+                        Telusuri catatan aktivitas Admin dan Pegawai, termasuk waktu, event, pelaku, alamat IP, user agent, dan properties dari activity log.
+                    </p>
+                </div>
+            </div>
+
+            {/* STATISTIC CARDS */}
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+                <div className="group relative overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md sm:p-5">
+                    <div className="flex items-start justify-between">
+                        <p className="text-xs font-bold uppercase tracking-wider text-[#7F8C8D]">Total Log Tersedia</p>
+                        <span className="rounded-xl bg-[#FCEBEC] p-2.5 text-[#8B0F14] transition-transform duration-200 group-hover:scale-110"><SummaryIcon type="total" /></span>
+                    </div>
+                    <p className="mt-2 font-montserrat text-2xl font-extrabold text-[#262626] sm:mt-3 sm:text-3xl">{logs.length.toLocaleString('id-ID')}</p>
+                    <p className="mt-1 text-xs text-[#7F8C8D]">Data contoh activity log</p>
+                </div>
+
+                <div className="group relative overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md sm:p-5">
+                    <div className="flex items-start justify-between">
+                        <p className="text-xs font-bold uppercase tracking-wider text-[#7F8C8D]">Aktivitas Hari Ini</p>
+                        <span className="rounded-xl bg-[#FFF4E5] p-2.5 text-[#B7791F] transition-transform duration-200 group-hover:scale-110"><SummaryIcon type="today" /></span>
+                    </div>
+                    <p className="mt-2 font-montserrat text-2xl font-extrabold text-[#262626] sm:mt-3 sm:text-3xl">{todayCount}</p>
+                    <p className="mt-1 text-xs text-[#7F8C8D]">Berdasarkan created_at</p>
+                </div>
+
+                <div className="group relative overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md sm:p-5">
+                    <div className="flex items-start justify-between">
+                        <p className="text-xs font-bold uppercase tracking-wider text-[#7F8C8D]">Aktivitas Admin</p>
+                        <span className="rounded-xl bg-[#E6F4EA] p-2.5 text-[#1E8E3E] transition-transform duration-200 group-hover:scale-110"><SummaryIcon type="admin" /></span>
+                    </div>
+                    <p className="mt-2 font-montserrat text-2xl font-extrabold text-[#1E8E3E] sm:mt-3 sm:text-3xl">{adminCount}</p>
+                    <p className="mt-1 text-xs text-[#7F8C8D]">Catatan oleh role Admin</p>
+                </div>
+
+                <div className="group relative overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md sm:p-5">
+                    <div className="flex items-start justify-between">
+                        <p className="text-xs font-bold uppercase tracking-wider text-[#7F8C8D]">Aktivitas Pegawai</p>
+                        <span className="rounded-xl bg-[#FCEBEC] p-2.5 text-[#8B0F14] transition-transform duration-200 group-hover:scale-110"><SummaryIcon type="employee" /></span>
+                    </div>
+                    <p className="mt-2 font-montserrat text-2xl font-extrabold text-[#262626] sm:mt-3 sm:text-3xl">{employeeCount}</p>
+                    <p className="mt-1 text-xs text-[#7F8C8D]">Catatan oleh role Pegawai</p>
+                </div>
+            </div>
+
+            {/* CARD MANAJEMEN TABEL */}
+            <div className="rounded-xl border border-[#E5E7EB] bg-white shadow-sm">
+                {/* TAB SWITCHER, SEARCH BAR, & ACTION BUTTON */}
+                <div className="flex min-w-0 flex-col gap-4 border-b border-[#E5E7EB] p-4 lg:flex-row lg:items-center lg:justify-between lg:px-6">
+                    <div className="grid min-w-0 grid-cols-2 gap-2 min-[480px]:flex min-[480px]:flex-wrap min-[480px]:items-center">
+                        <select
+                            value={logNameFilter}
+                            onChange={(event) => setLogNameFilter(event.target.value)}
+                            className="w-full rounded-[8px] border border-[#E5E7EB] bg-[#F5F5F5] px-3 py-2 text-xs font-bold text-[#262626] focus:border-[#8B0F14] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#8B0F14] min-[480px]:w-auto"
+                        >
+                            {logNameOptions.map((option) => (
+                                <option key={option.value} value={option.value}>{option.label}</option>
+                            ))}
+                        </select>
+
+                        <select
+                            value={roleFilter}
+                            onChange={(event) => setRoleFilter(event.target.value)}
+                            className="w-full rounded-[8px] border border-[#E5E7EB] bg-[#F5F5F5] px-3 py-2 text-xs font-bold text-[#262626] focus:border-[#8B0F14] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#8B0F14] min-[480px]:w-auto"
+                        >
+                            {roleOptions.map((role) => (
+                                <option key={role} value={role}>{role}</option>
+                            ))}
+                        </select>
+
+                        <select
+                            value={dateFilter}
+                            onChange={(event) => setDateFilter(event.target.value)}
+                            className="w-full rounded-[8px] border border-[#E5E7EB] bg-[#F5F5F5] px-3 py-2 text-xs font-bold text-[#262626] focus:border-[#8B0F14] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#8B0F14] min-[480px]:w-auto"
+                        >
+                            <option>Semua Waktu</option>
+                            <option>Hari Ini</option>
+                            <option>7 Hari Terakhir</option>
+                        </select>
+
+                        {(logNameFilter !== 'Semua Log' || roleFilter !== 'Semua Role' || dateFilter !== 'Semua Waktu' || search !== '') && (
+                            <button
+                                type="button"
+                                onClick={resetFilters}
+                                className="col-span-2 w-full rounded-[8px] px-3 py-2 text-center text-xs font-bold text-[#8B0F14] transition hover:bg-[#FCEBEC] min-[480px]:col-span-1 min-[480px]:w-auto"
+                            >
+                                Reset
+                            </button>
+                        )}
+                    </div>
+
+                    <div className="relative w-full min-w-0 lg:flex-1 lg:max-w-md">
+                        <input
+                            type="text"
+                            placeholder="Cari deskripsi, user, IP, user agent..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className="w-full rounded-[8px] border border-[#E5E7EB] bg-[#F5F5F5] py-2 pl-9 pr-3 text-xs text-[#262626] focus:border-[#8B0F14] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#8B0F14]"
+                        />
+                        <svg
+                            className="absolute left-3 top-2.5 h-4 w-4 text-[#7F8C8D]"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
                     </div>
 
                     <button
                         type="button"
                         onClick={exportCSV}
-                        className="inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-lg border border-[#E5E7EB] bg-white px-4 py-2.5 text-xs font-semibold text-[#262626] shadow-sm transition hover:bg-[#F9FAFB] focus:outline-none focus:ring-2 focus:ring-[#8B0F14] focus:ring-offset-2 sm:w-auto"
+                        className="inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-[8px] bg-[#8B0F14] px-5 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-[#6B0A0F] active:scale-95 lg:w-auto"
                     >
                         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v12m0 0 4-4m-4 4-4-4M5 17v3h14v-3" />
@@ -429,230 +533,170 @@ export default function SystemLogsIndex() {
                     </button>
                 </div>
 
-                {/* Summary cards */}
-                <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
-                    <div className="min-w-0 rounded-xl border border-[#E5E7EB] bg-white p-3 shadow-sm sm:p-5">
-                        <div className="flex items-start justify-between gap-3">
-                            <p className="text-xs font-medium text-[#7F8C8D]">Total Log Tersedia</p>
-                            <span className="rounded-lg bg-[#FCEBEC] p-2 text-[#8B0F14]"><SummaryIcon type="total" /></span>
-                        </div>
-                        <p className="mt-2 font-montserrat text-2xl font-extrabold text-[#262626] sm:mt-3 sm:text-3xl">{logs.length.toLocaleString('id-ID')}</p>
-                        <p className="mt-1 text-xs text-[#7F8C8D]">Data contoh activity log</p>
-                    </div>
-
-                    <div className="min-w-0 rounded-xl border border-[#E5E7EB] bg-white p-3 shadow-sm sm:p-5">
-                        <div className="flex items-start justify-between gap-3">
-                            <p className="text-xs font-medium text-[#7F8C8D]">Aktivitas Hari Ini</p>
-                            <span className="rounded-lg bg-[#FFF4E5] p-2 text-[#B7791F]"><SummaryIcon type="today" /></span>
-                        </div>
-                        <p className="mt-2 font-montserrat text-2xl font-extrabold text-[#262626] sm:mt-3 sm:text-3xl">{todayCount}</p>
-                        <p className="mt-1 text-xs text-[#7F8C8D]">Berdasarkan created_at</p>
-                    </div>
-
-                    <div className="min-w-0 rounded-xl border border-[#E5E7EB] bg-white p-3 shadow-sm sm:p-5">
-                        <div className="flex items-start justify-between gap-3">
-                            <p className="text-xs font-medium text-[#7F8C8D]">Aktivitas Admin</p>
-                            <span className="rounded-lg bg-[#EAF6EE] p-2 text-[#1E8E3E]"><SummaryIcon type="admin" /></span>
-                        </div>
-                        <p className="mt-2 font-montserrat text-2xl font-extrabold text-[#1E8E3E] sm:mt-3 sm:text-3xl">{adminCount}</p>
-                        <p className="mt-1 text-xs text-[#7F8C8D]">Catatan oleh role Admin</p>
-                    </div>
-
-                    <div className="min-w-0 rounded-xl border border-[#E5E7EB] bg-white p-3 shadow-sm sm:p-5">
-                        <div className="flex items-start justify-between gap-3">
-                            <p className="text-xs font-medium text-[#7F8C8D]">Aktivitas Pegawai</p>
-                            <span className="rounded-lg bg-[#FCEBEC] p-2 text-[#8B0F14]"><SummaryIcon type="employee" /></span>
-                        </div>
-                        <p className="mt-2 font-montserrat text-2xl font-extrabold text-[#262626] sm:mt-3 sm:text-3xl">{employeeCount}</p>
-                        <p className="mt-1 text-xs text-[#7F8C8D]">Catatan oleh role Pegawai</p>
-                    </div>
-                </div>
-
-                {/* Log table */}
-                <section className="overflow-hidden rounded-xl border border-[#E5E7EB] bg-white shadow-sm">
-                    <div className="border-b border-[#E5E7EB] p-4 sm:p-6">
-                        <div className="flex min-w-0 flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                            <div>
-                                <h2 className="font-montserrat text-base font-bold text-[#262626]">Riwayat Activity Log</h2>
-                                <p className="mt-1 text-xs text-[#7F8C8D]">Kolom utama mengikuti field Spatie Activity Log dan metadata request yang disimpan pada properties.</p>
-                            </div>
-                            <div className="relative w-full lg:max-w-xs">
-                                <svg className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#7F8C8D]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                    <circle cx="11" cy="11" r="7" />
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="m16 16 4 4" />
-                                </svg>
-                                <input
-                                    type="text"
-                                    value={search}
-                                    onChange={(event) => setSearch(event.target.value)}
-                                    placeholder="Cari deskripsi, user, IP, user agent..."
-                                    className="w-full rounded-lg border border-[#E5E7EB] bg-white py-2.5 pl-9 pr-3 text-xs text-[#262626] placeholder-[#9CA3AF] transition focus:border-[#8B0F14] focus:outline-none focus:ring-1 focus:ring-[#8B0F14]"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="mt-4 grid grid-cols-2 gap-2 xl:flex xl:flex-wrap xl:items-center">
-                            <select
-                                value={logNameFilter}
-                                onChange={(event) => setLogNameFilter(event.target.value)}
-                                className="w-full min-w-0 rounded-lg border border-[#E5E7EB] bg-white px-3 py-2.5 text-xs text-[#525252] focus:border-[#8B0F14] focus:outline-none focus:ring-1 focus:ring-[#8B0F14] xl:w-auto"
-                            >
-                                {logNameOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                            </select>
-                            <select
-                                value={roleFilter}
-                                onChange={(event) => setRoleFilter(event.target.value)}
-                                className="w-full min-w-0 rounded-lg border border-[#E5E7EB] bg-white px-3 py-2.5 text-xs text-[#525252] focus:border-[#8B0F14] focus:outline-none focus:ring-1 focus:ring-[#8B0F14] xl:w-auto"
-                            >
-                                {roleOptions.map((role) => <option key={role} value={role}>{role}</option>)}
-                            </select>
-                            <select
-                                value={dateFilter}
-                                onChange={(event) => setDateFilter(event.target.value)}
-                                className="w-full min-w-0 rounded-lg border border-[#E5E7EB] bg-white px-3 py-2.5 text-xs text-[#525252] focus:border-[#8B0F14] focus:outline-none focus:ring-1 focus:ring-[#8B0F14] xl:w-auto"
-                            >
-                                <option>Semua Waktu</option>
-                                <option>Hari Ini</option>
-                                <option>7 Hari Terakhir</option>
-                            </select>
-                            <button
-                                type="button"
-                                onClick={resetFilters}
-                                className="col-span-2 w-full rounded-lg px-3 py-2.5 text-center text-xs font-semibold text-[#8B0F14] transition hover:bg-[#FCEBEC] xl:col-span-1 xl:ml-auto xl:w-auto"
-                            >Reset filter</button>
-                        </div>
-                    </div>
-
-                    <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 sm:px-6">
-                        <p className="text-xs text-[#7F8C8D]">Menampilkan <span className="font-semibold text-[#262626]">{filteredLogs.length}</span> data yang sesuai</p>
-                        <span className="inline-flex items-center gap-1.5 text-[11px] text-[#7F8C8D]">
-                            <span className="h-1.5 w-1.5 rounded-full bg-[#B7791F]" />Data contoh
-                        </span>
-                    </div>
-
-                    {/* Mobile activity cards */}
-                    <div className="divide-y divide-[#E5E7EB] md:hidden">
-                        {paginatedLogs.length > 0 ? paginatedLogs.map((log) => (
+                {/* MOBILE CARDS */}
+                <div className="divide-y divide-[#E5E7EB] md:hidden">
+                    {paginatedLogs.length > 0 ? (
+                        paginatedLogs.map((log) => (
                             <article key={log.id} className="space-y-3 p-4">
                                 <div className="flex flex-wrap items-center justify-between gap-2">
                                     <span className="inline-flex max-w-full break-all rounded-md bg-[#F3F4F6] px-2.5 py-1 font-mono text-[10px] font-medium text-[#525252]">{log.log_name || 'default'}</span>
                                     <EventBadge event={log.event} />
                                 </div>
                                 <div>
-                                    <p className="break-words text-sm font-semibold leading-5 text-[#262626]">{log.description}</p>
+                                    <p className="break-words font-montserrat text-sm font-bold text-[#262626]">{log.description}</p>
                                     <p className="mt-1 text-[10px] text-[#7F8C8D]">ID: {log.id} · Subject ID: {log.subject_id ?? '—'}</p>
                                 </div>
-                                <dl className="grid grid-cols-2 gap-3 rounded-lg bg-[#F9FAFB] p-3 text-[11px]">
+                                <dl className="grid grid-cols-2 gap-3 rounded-lg bg-[#F9FAFB] p-3 text-xs">
                                     <div className="min-w-0">
-                                        <dt className="text-[#7F8C8D]">Waktu</dt>
-                                        <dd className="mt-1 break-words leading-4 text-[#262626]">{formatDateTime(log.created_at)}</dd>
+                                        <dt className="text-[10px] text-[#7F8C8D]">Waktu</dt>
+                                        <dd className="mt-1 break-words text-[11px] leading-4 text-[#525252]">{formatDateTime(log.created_at)}</dd>
                                     </div>
                                     <div className="min-w-0">
-                                        <dt className="text-[#7F8C8D]">Pelaku</dt>
-                                        <dd className="mt-1 break-words font-semibold text-[#262626]">{log.causer_name || '—'}</dd>
-                                        <dd className="mt-0.5 break-words text-[#7F8C8D]">{log.causer_role || '—'}</dd>
+                                        <dt className="text-[10px] text-[#7F8C8D]">Pelaku</dt>
+                                        <dd className="mt-1 break-words text-[11px] font-semibold text-[#262626]">{log.causer_name || '—'}</dd>
+                                        <dd className="mt-0.5 break-words text-[10px] text-[#7F8C8D]">{log.causer_role || '—'}</dd>
                                     </div>
                                     <div className="col-span-2 min-w-0">
-                                        <dt className="text-[#7F8C8D]">IP Address</dt>
-                                        <dd className="mt-1 break-all font-mono text-[#262626]">{log.properties?.ip || '—'}</dd>
+                                        <dt className="text-[10px] text-[#7F8C8D]">IP Address</dt>
+                                        <dd className="mt-1 break-all font-mono text-[11px] text-[#262626]">{log.properties?.ip || '—'}</dd>
                                     </div>
                                 </dl>
                                 <button
                                     type="button"
                                     onClick={() => setSelectedLog(log)}
-                                    className="inline-flex min-h-10 w-full items-center justify-center gap-1.5 rounded-lg border border-[#E5E7EB] px-3 py-2 text-xs font-semibold text-[#626262] transition hover:border-[#F2C9CB] hover:bg-[#FCEBEC] hover:text-[#8B0F14]"
+                                    className="inline-flex min-h-9 w-full items-center justify-center gap-1.5 rounded-lg border border-[#E5E7EB] px-3 py-2 text-xs font-semibold text-[#626262] transition hover:bg-[#F5F5F5] hover:text-[#262626]"
                                 >
                                     <DetailIcon /> Lihat detail
                                 </button>
                             </article>
-                        )) : (
-                            <div className="px-4 py-10 text-center">
-                                <p className="text-sm font-semibold text-[#262626]">Tidak ada log ditemukan</p>
-                                <p className="mt-1 text-xs text-[#7F8C8D]">Ubah kata kunci atau reset filter untuk melihat data lainnya.</p>
-                            </div>
-                        )}
-                    </div>
+                        ))
+                    ) : (
+                        <div className="px-4 py-10 text-center">
+                            <p className="text-sm font-semibold text-[#262626]">Tidak ada log ditemukan</p>
+                            <p className="mt-1 text-xs text-[#7F8C8D]">Ubah kata kunci atau reset filter untuk melihat data lainnya.</p>
+                        </div>
+                    )}
+                </div>
 
-                    {/* Desktop/tablet table */}
-                    <div className="hidden max-w-full overflow-x-auto overscroll-x-contain md:block">
-                        <table className="w-full min-w-[1050px] border-collapse text-left">
-                            <thead>
-                                <tr className="border-y border-[#E5E7EB] bg-[#F9FAFB]">
-                                    <th className="px-5 py-3.5 text-[11px] font-bold uppercase tracking-wide text-[#7F8C8D]">DateTime</th>
-                                    <th className="px-5 py-3.5 text-[11px] font-bold uppercase tracking-wide text-[#7F8C8D]">Log Name</th>
-                                    <th className="px-5 py-3.5 text-[11px] font-bold uppercase tracking-wide text-[#7F8C8D]">Description</th>
-                                    <th className="px-5 py-3.5 text-[11px] font-bold uppercase tracking-wide text-[#7F8C8D]">Causer</th>
-                                    <th className="px-5 py-3.5 text-[11px] font-bold uppercase tracking-wide text-[#7F8C8D]">IP Address</th>
-                                    <th className="px-5 py-3.5 text-[11px] font-bold uppercase tracking-wide text-[#7F8C8D]">User Agent</th>
-                                    <th className="px-5 py-3.5 text-[11px] font-bold uppercase tracking-wide text-[#7F8C8D]">Event</th>
-                                    <th className="px-5 py-3.5 text-right text-[11px] font-bold uppercase tracking-wide text-[#7F8C8D]">Detail</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-[#E5E7EB]">
-                                {paginatedLogs.length > 0 ? paginatedLogs.map((log) => (
-                                    <tr key={log.id} className="transition hover:bg-[#FCFCFC]">
-                                        <td className="whitespace-nowrap px-5 py-4 text-xs text-[#626262]">{formatDateTime(log.created_at)}</td>
-                                        <td className="px-5 py-4"><span className="inline-flex rounded-md bg-[#F3F4F6] px-2.5 py-1 font-mono text-[10px] font-medium text-[#525252]">{log.log_name || 'default'}</span></td>
-                                        <td className="min-w-[220px] px-5 py-4">
-                                            <p className="max-w-[280px] text-xs font-semibold text-[#262626]">{log.description}</p>
-                                            <p className="mt-1 text-[10px] text-[#7F8C8D]">ID: {log.id} · Subject ID: {log.subject_id ?? '—'}</p>
+                {/* DESKTOP/TABLET TABLE */}
+                <div className="hidden overflow-x-auto md:block">
+                    <table className="w-full min-w-[760px] text-left text-xs font-dmsans">
+                        <thead className="bg-[#F5F5F5] font-montserrat text-[11px] font-bold uppercase tracking-wider text-[#7F8C8D]">
+                            <tr>
+                                <th className="px-6 py-3.5">DateTime</th>
+                                <th className="px-6 py-3.5">Log Name</th>
+                                <th className="px-6 py-3.5">Description</th>
+                                <th className="px-6 py-3.5">Causer</th>
+                                <th className="px-6 py-3.5">IP Address</th>
+                                <th className="px-6 py-3.5">User Agent</th>
+                                <th className="px-6 py-3.5">Event</th>
+                                <th className="px-6 py-3.5 text-right">Detail</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-[#E5E7EB] bg-white">
+                            {paginatedLogs.length > 0 ? (
+                                paginatedLogs.map((log) => (
+                                    <tr key={log.id} className="transition hover:bg-[#FCEBEC]/20">
+                                        <td className="whitespace-nowrap px-6 py-4 font-mono text-[#7F8C8D]">{formatDateTime(log.created_at)}</td>
+                                        <td className="px-6 py-4">
+                                            <span className="inline-flex rounded-md bg-[#F3F4F6] px-2.5 py-1 font-mono text-[10px] font-medium text-[#525252]">
+                                                {log.log_name || 'default'}
+                                            </span>
                                         </td>
-                                        <td className="px-5 py-4">
-                                            <p className="text-xs font-semibold text-[#262626]">{log.causer_name || '—'}</p>
-                                            <p className="mt-1 text-[11px] text-[#7F8C8D]">{log.causer_role} · ID {log.causer_id ?? '—'}</p>
+                                        <td className="min-w-[200px] px-6 py-4">
+                                            <p className="font-montserrat font-bold text-[#262626]">{log.description}</p>
+                                            <p className="mt-0.5 text-[11px] text-[#7F8C8D]">ID: {log.id} · Subject ID: {log.subject_id ?? '—'}</p>
                                         </td>
-                                        <td className="whitespace-nowrap px-5 py-4 font-mono text-xs text-[#525252]">{log.properties?.ip || '—'}</td>
-                                        <td className="max-w-[230px] px-5 py-4 text-xs text-[#626262]">
-                                            <span className="block max-w-[220px] truncate" title={log.properties?.user_agent || 'Tidak tersedia'}>{log.properties?.user_agent || 'Tidak tersedia'}</span>
+                                        <td className="px-6 py-4">
+                                            <p className="font-montserrat font-bold text-[#262626]">{log.causer_name || '—'}</p>
+                                            <p className="text-[11px] text-[#7F8C8D]">{log.causer_role} · ID {log.causer_id ?? '—'}</p>
                                         </td>
-                                        <td className="px-5 py-4"><EventBadge event={log.event} /></td>
-                                        <td className="px-5 py-4 text-right">
+                                        <td className="whitespace-nowrap px-6 py-4 font-mono text-[#525252]">{log.properties?.ip || '—'}</td>
+                                        <td className="max-w-[200px] px-6 py-4 text-[#7F8C8D]">
+                                            <span className="block truncate" title={log.properties?.user_agent || 'Tidak tersedia'}>
+                                                {log.properties?.user_agent || 'Tidak tersedia'}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4"><EventBadge event={log.event} /></td>
+                                        <td className="px-6 py-4 text-right">
                                             <button
                                                 type="button"
                                                 onClick={() => setSelectedLog(log)}
-                                                className="inline-flex items-center gap-1.5 rounded-lg border border-[#E5E7EB] px-3 py-2 text-[11px] font-semibold text-[#626262] transition hover:border-[#F2C9CB] hover:bg-[#FCEBEC] hover:text-[#8B0F14]"
-                                            ><DetailIcon />Lihat detail</button>
+                                                className="inline-flex items-center gap-1.5 rounded-lg border border-[#E5E7EB] px-3 py-1.5 text-xs font-medium text-[#262626] transition hover:bg-[#F5F5F5]"
+                                            >
+                                                <DetailIcon /> Detail
+                                            </button>
                                         </td>
                                     </tr>
-                                )) : (
-                                    <tr>
-                                        <td colSpan={8} className="px-6 py-14 text-center">
-                                            <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-[#F9FAFB] text-[#9CA3AF]">
-                                                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><circle cx="11" cy="11" r="7" /><path strokeLinecap="round" strokeLinejoin="round" d="m16 16 4 4" /></svg>
-                                            </div>
-                                            <p className="mt-3 text-sm font-semibold text-[#262626]">Tidak ada log ditemukan</p>
-                                            <p className="mt-1 text-xs text-[#7F8C8D]">Ubah kata kunci atau reset filter untuk melihat data lainnya.</p>
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan={8} className="py-12 text-center text-[#7F8C8D]">
+                                        Tidak ada log ditemukan.
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
 
-                    <div className="flex flex-col gap-3 border-t border-[#E5E7EB] px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-                        <p className="text-xs text-[#7F8C8D]">
-                            Menampilkan {filteredLogs.length === 0 ? 0 : startIndex + 1}–{Math.min(startIndex + itemsPerPage, filteredLogs.length)} dari {filteredLogs.length} log
-                        </p>
-                        {totalPages > 1 && (
-                            <div className="flex flex-wrap items-center justify-between gap-1.5 sm:justify-end">
-                                <span className="mr-1 text-[11px] text-[#7F8C8D] sm:hidden">Halaman {safePage} / {totalPages}</span>
-                                <button type="button" onClick={() => setCurrentPage((page) => Math.max(1, page - 1))} disabled={safePage === 1} className="rounded-lg border border-[#E5E7EB] px-3 py-2 text-xs font-medium text-[#262626] transition hover:bg-[#F5F5F5] disabled:cursor-not-allowed disabled:opacity-40">Sebelumnya</button>
-                                {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
-                                    <button key={page} type="button" onClick={() => setCurrentPage(page)} className={`hidden h-8 min-w-8 rounded-lg px-2 text-xs font-semibold transition sm:inline-flex sm:items-center sm:justify-center ${safePage === page ? 'bg-[#8B0F14] text-white' : 'border border-[#E5E7EB] bg-white text-[#262626] hover:bg-[#F5F5F5]'}`}>{page}</button>
-                                ))}
-                                <button type="button" onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))} disabled={safePage === totalPages} className="rounded-lg border border-[#E5E7EB] px-3 py-2 text-xs font-medium text-[#262626] transition hover:bg-[#F5F5F5] disabled:cursor-not-allowed disabled:opacity-40">Selanjutnya</button>
-                            </div>
-                        )}
-                    </div>
-                </section>
+                {/* PAGINASI */}
+                <div className="flex flex-col gap-4 border-t border-[#E5E7EB] px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+                    <p className="text-xs text-[#7F8C8D]">
+                        Menampilkan{' '}
+                        <span className="font-semibold text-[#262626]">
+                            {filteredLogs.length === 0 ? 0 : startIndex + 1}
+                        </span>{' '}
+                        hingga{' '}
+                        <span className="font-semibold text-[#262626]">
+                            {Math.min(startIndex + itemsPerPage, filteredLogs.length)}
+                        </span>{' '}
+                        dari <span className="font-semibold text-[#262626]">{filteredLogs.length}</span> log
+                    </p>
 
-                <div className="flex items-start gap-3 rounded-xl border border-[#E5E7EB] bg-white px-4 py-3.5 text-xs text-[#7F8C8D] shadow-sm">
-                    <svg className="mt-0.5 h-4 w-4 shrink-0 text-[#8B0F14]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><circle cx="12" cy="12" r="9" /><path strokeLinecap="round" d="M12 11v5m0-8h.01" /></svg>
-                    <p>Mode demo frontend. Field <span className="font-mono">id</span>, <span className="font-mono">log_name</span>, <span className="font-mono">description</span>, <span className="font-mono">event</span>, <span className="font-mono">subject</span>, <span className="font-mono">causer</span>, <span className="font-mono">properties</span>, <span className="font-mono">created_at</span>, dan <span className="font-mono">updated_at</span> mengikuti struktur umum Spatie Activity Log. IP dan user agent pada contoh disimpan di properties.</p>
+                    {totalPages > 1 && (
+                        <div className="flex flex-wrap items-center justify-between gap-1.5 sm:justify-end">
+                            <span className="px-1 text-xs text-[#7F8C8D] sm:hidden">Halaman {safePage} / {totalPages}</span>
+                            <button
+                                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                                disabled={safePage === 1}
+                                className="inline-flex items-center rounded-lg border border-[#E5E7EB] bg-white px-3 py-1.5 text-xs font-medium text-[#262626] transition hover:bg-[#F5F5F5] disabled:cursor-not-allowed disabled:opacity-40"
+                            >
+                                Sebelumnya
+                            </button>
+
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                                <button
+                                    key={page}
+                                    onClick={() => setCurrentPage(page)}
+                                    className={`hidden h-8 min-w-[32px] rounded-lg text-xs font-semibold transition sm:inline-flex sm:items-center sm:justify-center ${
+                                        safePage === page
+                                            ? 'bg-[#8B0F14] text-white shadow-sm'
+                                            : 'border border-[#E5E7EB] bg-white text-[#262626] hover:bg-[#F5F5F5]'
+                                    }`}
+                                >
+                                    {page}
+                                </button>
+                            ))}
+
+                            <button
+                                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                                disabled={safePage === totalPages}
+                                className="inline-flex items-center rounded-lg border border-[#E5E7EB] bg-white px-3 py-1.5 text-xs font-medium text-[#262626] transition hover:bg-[#F5F5F5] disabled:cursor-not-allowed disabled:opacity-40"
+                            >
+                                Selanjutnya
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
 
-            {/* Detail modal */}
+            <div className="flex items-start gap-3 rounded-xl border border-[#E5E7EB] bg-white px-4 py-3.5 text-xs text-[#7F8C8D] shadow-sm">
+                <svg className="mt-0.5 h-4 w-4 shrink-0 text-[#8B0F14]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><circle cx="12" cy="12" r="9" /><path strokeLinecap="round" d="M12 11v5m0-8h.01" /></svg>
+                <p>Mode demo frontend. Field <span className="font-mono">id</span>, <span className="font-mono">log_name</span>, <span className="font-mono">description</span>, <span className="font-mono">event</span>, <span className="font-mono">subject</span>, <span className="font-mono">causer</span>, <span className="font-mono">properties</span>, <span className="font-mono">created_at</span>, dan <span className="font-mono">updated_at</span> mengikuti struktur umum Spatie Activity Log. IP dan user agent pada contoh disimpan di properties.</p>
+            </div>
+
+            {/* DETAIL MODAL */}
             {selectedLog && (
                 <div
                     className="fixed inset-0 z-[9999] flex items-start justify-center overflow-y-auto bg-black/40 p-2 backdrop-blur-sm sm:items-center sm:p-4"
@@ -660,7 +704,7 @@ export default function SystemLogsIndex() {
                         if (event.target === event.currentTarget) setSelectedLog(null);
                     }}
                 >
-                    <div className="my-auto max-h-[calc(100dvh-1rem)] w-full max-w-2xl overflow-y-auto overscroll-contain rounded-2xl bg-white p-4 shadow-2xl sm:max-h-[calc(100dvh-2rem)] sm:p-7">
+                    <div className="relative my-auto max-h-[calc(100dvh-1rem)] w-full max-w-2xl overflow-y-auto overscroll-contain rounded-2xl bg-white p-4 shadow-2xl sm:max-h-[calc(100dvh-2rem)] sm:p-7">
                         <div className="flex items-start justify-between border-b border-[#E5E7EB] pb-4">
                             <div className="pr-4">
                                 <h2 className="font-montserrat text-lg font-bold text-[#262626]">Detail Activity Log</h2>
@@ -671,7 +715,7 @@ export default function SystemLogsIndex() {
                             </button>
                         </div>
 
-                        <div className="mt-5 rounded-xl bg-[#F9FAFB] p-4">
+                        <div className="mt-5 rounded-xl bg-[#F8F9FA] p-4 border border-[#E5E7EB]/60">
                             <div className="flex flex-wrap items-start justify-between gap-3">
                                 <div>
                                     <p className="text-[11px] font-medium uppercase tracking-wide text-[#7F8C8D]">Description</p>
@@ -736,13 +780,13 @@ export default function SystemLogsIndex() {
                         </div>
 
                         <div className="mt-5 flex justify-end border-t border-[#E5E7EB] pt-4">
-                            <button type="button" onClick={() => setSelectedLog(null)} className="w-full rounded-lg border border-[#E5E7EB] bg-white px-4 py-2.5 text-xs font-semibold text-[#262626] transition hover:bg-[#F5F5F5] sm:w-auto">Tutup</button>
+                            <button type="button" onClick={() => setSelectedLog(null)} className="w-full rounded-[8px] border border-[#E5E7EB] bg-white px-5 py-2 text-xs font-semibold text-[#262626] shadow-sm hover:bg-[#F5F5F5] transition sm:w-auto">Tutup</button>
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* Toast alert, konsisten dengan halaman Manajemen Pengguna */}
+            {/* TOAST ALERT */}
             {mounted && toast && createPortal(
                 <>
                     <style>{`
@@ -780,6 +824,8 @@ export default function SystemLogsIndex() {
                 </>,
                 document.body
             )}
-        </SuperadminLayout>
+        </div>
     );
 }
+
+SystemLogsIndex.layout = (page) => <SuperadminLayout>{page}</SuperadminLayout>;
