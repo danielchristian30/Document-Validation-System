@@ -53,6 +53,8 @@ Route::middleware(['auth', 'role:superadmin','superadmin.whitelist'])->group(fun
 // Route Admin
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
+    Route::get('/admin/employees', function () { return Inertia::render('Admin/Employees/Index'); })->name('admin.employees.index');
+    Route::get('/admin/document-recap', function () { return Inertia::render('Admin/DocumentRecap/Index'); })->name('admin.document-recap.index');
 });
 
 // Route Employee
