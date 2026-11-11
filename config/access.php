@@ -52,7 +52,7 @@ return [
     | Opsi Alasan Pemblokiran Manual
     |--------------------------------------------------------------------------
     |
-    | Opsi alasan pemblokiran yang dilakukan secara manual oleh superadmin
+    | Alasan pemblokiran yang dilakukan secara manual oleh superadmin
     | 
     */
 

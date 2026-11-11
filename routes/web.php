@@ -6,10 +6,11 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Http\Controllers\Superadmin\DashboardController as SuperadminDashboardController;
-use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
-use App\Http\Controllers\Employee\DashboardController as EmployeeDashboardController;
 use App\Http\Controllers\Superadmin\UserManagementController as SuperadminUserManagementController;
 use App\Http\Controllers\Superadmin\IpBlockListController as SuperadminIpBlockListController;
+use App\Http\Controllers\Superadmin\SystemLogController as SuperadminSystemLogsController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Employee\DashboardController as EmployeeDashboardController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -35,18 +36,19 @@ Route::get('/dashboard', function (Request $request) {
 Route::middleware(['auth', 'role:superadmin','superadmin.whitelist'])->group(function () {
     Route::get('/superadmin/dashboard', [SuperadminDashboardController::class, 'index'])->name('superadmin.dashboard');
 
-    // UserManagement Controller
+    // UserManagement
     Route::get('/superadmin/users', [SuperadminUserManagementController::class, 'index'])->name('superadmin.users.index');
     Route::post('/superadmin/users', [SuperadminUserManagementController::class, 'store'])->name('superadmin.users.store');
     Route::put('/superadmin/users/{user}', [SuperadminUserManagementController::class, 'update'])->name('superadmin.users.update');
     Route::delete('/superadmin/users/{user}', [SuperadminUserManagementController::class, 'destroy'])->name('superadmin.users.destroy');
 
-    // IpBlockList Controller
+    // IpBlockList
     Route::get('/superadmin/ip-blocklist', [SuperadminIpBlockListController::class, 'index'])->name('superadmin.ip-blocklist.index');
     Route::post('/superadmin/ip-blocklist', [SuperadminIpBlockListController::class, 'store'])->name('superadmin.ip-blocklist.store');
     Route::delete('/superadmin/ip-blocklist/{blockedIp}', [SuperadminIpBlockListController::class, 'destroy'])->name('superadmin.ip-blocklist.destroy');
     
-    Route::get('/superadmin/system-logs', function () { return Inertia::render('Superadmin/SystemLogs/Index'); })->name('superadmin.system-logs.index');
+    // SystemLogs
+    Route::get('/superadmin/system-logs', [SuperadminSystemLogsController::class, 'index'])->name('superadmin.system-logs.index');
 
 });
 

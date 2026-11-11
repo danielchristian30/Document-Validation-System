@@ -6,6 +6,7 @@ use Closure;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use App\Support\AuditLogger;
 
 class EnsureAuthorizedSuperadmin
 {
@@ -33,16 +34,33 @@ class EnsureAuthorizedSuperadmin
 
             // Hapus Session Login
             if (!$authorized) {
+                 AuditLogger::log(
+                    logName: 'security',
+                    description: 'Superadmin ditolak karena tidak terdaftar dalam whitelist.',
+                    event: 'unauthorized_superadmin',
+                    customProperties: [
+                        'user_id' => $user->id,
+                        'username' => $user->username,
+                        'email' => $user->email,
+                        'role' => $user->role,
+                    ]
+                );
+            
                 Auth::logout();
 
                 $request->session()->invalidate();
                 $request->session()->regenerateToken();
 
-                abort_unless(
-                    $authorized,
+                abort(
                     403,
                     'Akses ditolak: Akun superadmin tidak terdaftar dalam whitelist.'
                 );
+                
+                // abort_unless(
+                //     $authorized,
+                //     403,
+                //     'Akses ditolak: Akun superadmin tidak terdaftar dalam whitelist.'
+                // );
 
                 return redirect()->route('login');
             }
