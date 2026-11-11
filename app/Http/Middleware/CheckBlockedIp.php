@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use App\Models\BlockedIp;
 use Symfony\Component\HttpFoundation\Response;
+use App\Support\AuditLogger;
 
 class CheckBlockedIp
 {
@@ -34,6 +35,16 @@ class CheckBlockedIp
         );
 
         if (in_array($clientIp, $blockedIps, true)) {
+            // Catat log IP terblokir yang mencoba masuk
+            AuditLogger::log(
+                logName: 'security',
+                description: "Percobaan akses ditolak dari alamat IP terblokir : {$clientIp}",
+                event: 'blocked_ip_access',
+                customProperties: [
+                    'blocked_ip' => $clientIp,
+                ]
+            );
+            
             abort(
                 403,
                 'Akses ditolak : Alamat IP anda telah diblokir oleh sistem keamanan.'

@@ -219,7 +219,7 @@ export default function UsersIndex({
 
     return (
         <div onClick={closeDropdown} className="min-h-full w-full min-w-0 space-y-5 sm:space-y-6">
-            <Head title="Manajemen Pengguna - SIVALDEN" />
+            <Head title="Manajemen Pengguna" />
 
             {/* TOAST ALERT */}
             {mounted && toast && createPortal(

@@ -10,6 +10,7 @@ use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 use Illuminate\Http\RedirectResponse;
+use App\Support\AuditLogger;
 use PhpParser\Node\Stmt\Block;
 
 class IpBlockListController extends Controller
@@ -60,6 +61,17 @@ class IpBlockListController extends Controller
 
         Cache::forget('system_blocked_ips');
 
+        // Catat ke System Logs
+        AuditLogger::log(
+            logName: 'security',
+            description: "Superadmin menambahkan alamat IP {$ipAddress} ke daftar blokir manual.",
+            event: 'ip_blocked',
+            customProperties: [
+                'blocked_ip' => $ipAddress,
+                'reason' => $validated['reason'] ?? null,
+            ]
+        );
+
         return back()->with(
             'success',
             'Alamat IP berhasil diblokir.'
@@ -71,9 +83,20 @@ class IpBlockListController extends Controller
      */
     public function destroy(BlockedIp $blockedIp): RedirectResponse
     {
+        $ipAddress = $blockedIp->ip_address;
         $blockedIp->delete();
 
         Cache::forget('system_blocked_ips');
+
+        // Catat ke System Logs
+        AuditLogger::log(
+            logName: 'security',
+            description: "Superadmin membuka blokir untuk alamat IP {$ipAddress}.",
+            event: 'ip_unblocked',
+            customProperties: [
+                'unblocked_ip' => $ipAddress,
+            ]
+        );
 
         return back()->with(
             'success',

@@ -42,7 +42,7 @@ class DashboardController extends Controller
                     'description' => $activity->description,
                     'causer_name' => $activity->causer ? $activity->causer->name : 'Sistem / Tamu',
                     'ip_address' => $ip,
-                    'created_at' => $activity->created_at->format('H:i'),
+                    'created_at' => $activity->created_at?->toIso8601String(),
                     'is_success' => !str_contains(strtolower($activity->description), 'gagal'),
                 ];
             });

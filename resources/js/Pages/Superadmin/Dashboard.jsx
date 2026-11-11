@@ -2,6 +2,20 @@ import React from 'react';
 import { Head } from '@inertiajs/react';
 import SuperadminLayout from '@/Layouts/SuperadminLayout';
 
+function formatDateTime(value) {
+    if (!value) return '-';
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) return '-';
+
+    return date.toLocaleTimeString('id-ID', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hourCycle: 'h23',
+    });
+}
+
 export default function SuperadminDashboard({ user, stats, recentActivities = [] }) {
     return (
         <SuperadminLayout>
@@ -100,7 +114,7 @@ export default function SuperadminDashboard({ user, stats, recentActivities = []
                 <div className="flex flex-col gap-2 border-b border-[#E5E7EB] pb-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <h3 className="font-montserrat text-base font-bold text-[#262626]">
-                            Aktivitas Keamanan Terbaru
+                            Aktivitas Sistem Terbaru
                         </h3>
                         <p className="text-xs text-[#7F8C8D] mt-0.5">Log peristiwa keamanan sistem secara langsung</p>
                     </div>
@@ -138,7 +152,7 @@ export default function SuperadminDashboard({ user, stats, recentActivities = []
                                 </div>
                                 
                                 <span className="shrink-0 font-mono text-[11px] text-[#7F8C8D] sm:text-right">
-                                    {item.created_at}
+                                    {formatDateTime(item.created_at)}
                                 </span>
                             </div>
                         ))

@@ -6,6 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
+use App\Support\AuditLogger;
 
 class EnsureUserIsActive
 {
@@ -20,6 +21,17 @@ class EnsureUserIsActive
 
         // Memeriksa status akun user
         if ($user && ! (bool) $user->is_active) {
+            AuditLogger::log(
+                logName: 'security',
+                description: 'Akun nonaktif mencoba mengakses sistem.',
+                event: 'inactive_account_access',
+                customProperties: [
+                    'user_id' => $user->id,
+                    'username' => $user->username,
+                    'role' => $user->role,
+                ]
+            );
+        
             // Logout user
             Auth::logout();
 
