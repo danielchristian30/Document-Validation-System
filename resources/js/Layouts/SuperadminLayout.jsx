@@ -6,7 +6,7 @@ function Brand({ compact = false }) {
         <div className="flex min-w-0 items-center gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[8px] bg-white/10">
                 <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a2 2 0 01.293.707V19a2 2 0 01-2 2z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
             </div>
             <div className="min-w-0">
@@ -25,7 +25,7 @@ function NavigationLinks({ url, onNavigate }) {
             active: url === '/dashboard' || url?.startsWith('/superadmin/dashboard'),
             icon: (
                 <svg className="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2-2h-2a2 2 0 01-2-2v-2z" />
                 </svg>
             ),
         },
@@ -55,7 +55,7 @@ function NavigationLinks({ url, onNavigate }) {
             active: url?.startsWith('/superadmin/system-logs'),
             icon: (
                 <svg className="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 3a2 2 0 012-2h2a2 2 0 012 2m-3 9h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 3h6v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V3zm0 9h3m-3 4h3m-6-4h.01M9 16h.01" />
                 </svg>
             ),
         },
@@ -89,7 +89,7 @@ function ProfileActions({ user, onNavigate, mobile = false }) {
                     </div>
                     <div className="min-w-0">
                         <p className="truncate text-xs font-bold uppercase text-white">{user?.username || 'Super Admin'}</p>
-                        <p className="truncate text-[10px] text-white/70">{user?.email || 'admin@denpasarkota.com'}</p>
+                        <p className="truncate text-[10px] text-white/70">{user?.email || 'admin@denpasarkota.go.id'}</p>
                     </div>
                 </div>
             )}
@@ -143,8 +143,10 @@ export default function SuperadminLayout({ children }) {
 
     useEffect(() => {
         if (!isMobileNavOpen) return undefined;
+
         const previousOverflow = document.body.style.overflow;
         document.body.style.overflow = 'hidden';
+
         return () => {
             document.body.style.overflow = previousOverflow;
         };
@@ -178,7 +180,7 @@ export default function SuperadminLayout({ children }) {
                             <div className="absolute bottom-full left-4 right-4 z-50 mb-2 overflow-hidden rounded-[8px] border border-[#E5E7EB] bg-white shadow-xl">
                                 <div className="border-b border-[#E5E7EB] px-4 py-2.5">
                                     <p className="truncate text-xs font-bold uppercase text-[#262626]">{user?.username || 'Super Admin'}</p>
-                                    <p className="truncate text-[10px] text-[#7F8C8D]">{user?.email || 'admin@denpasarkota.com'}</p>
+                                    <p className="truncate text-[10px] text-[#7F8C8D]">{user?.email || 'admin@denpasarkota.go.id'}</p>
                                 </div>
                                 <ProfileActions user={user} onNavigate={() => setIsProfileOpen(false)} />
                             </div>
@@ -196,10 +198,10 @@ export default function SuperadminLayout({ children }) {
                                 </div>
                                 <div className="min-w-0">
                                     <p className="truncate text-xs font-bold uppercase text-white">{user?.username || 'Super Admin'}</p>
-                                    <p className="truncate text-[10px] text-white/70">{user?.email || 'admin@denpasarkota.com'}</p>
+                                    <p className="truncate text-[10px] text-white/70">{user?.email || 'admin@denpasarkota.go.id'}</p>
                                 </div>
                             </div>
-                            <svg className={`h-4 w-4 shrink-0 text-white/80 transition-transform ${isProfileOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg className={`h-4 w-4 shrink-0 text-white/80 transition-transform duration-300 ${isProfileOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
                             </svg>
                         </button>
@@ -213,7 +215,7 @@ export default function SuperadminLayout({ children }) {
                         <div className="flex min-w-0 items-center gap-3">
                             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#8B0F14]">
                                 <svg className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a2 2 0 01.707.293l5.414 5.414a2 2 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                 </svg>
                             </div>
                             <div className="min-w-0">
@@ -240,33 +242,49 @@ export default function SuperadminLayout({ children }) {
                 </div>
             </div>
 
-            {/* MOBILE DRAWER */}
-            {isMobileNavOpen && (
-                <div
-                    className="fixed inset-x-0 bottom-0 top-1 z-[70] flex bg-black/50 lg:hidden"
-                    onMouseDown={(event) => {
-                        if (event.target === event.currentTarget) closeMobileNav();
-                    }}
+            {/* MOBILE DRAWER: same slide and backdrop animation as AdminLayout */}
+            <div
+                className={`fixed inset-x-0 bottom-0 top-1 z-[70] flex bg-black/50 transition-opacity duration-300 ease-in-out lg:hidden ${
+                    isMobileNavOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                }`}
+                aria-hidden={!isMobileNavOpen}
+                onMouseDown={(event) => {
+                    if (event.target === event.currentTarget) closeMobileNav();
+                }}
+            >
+                <aside
+                    className={`flex h-full w-[min(86vw,320px)] max-w-full flex-col bg-[#8B0F14] text-white shadow-2xl transform transition-transform duration-300 ease-in-out ${
+                        isMobileNavOpen ? 'translate-x-0' : '-translate-x-full'
+                    }`}
+                    aria-label="Navigasi Superadmin"
                 >
-                    <aside className="flex h-full w-[min(86vw,320px)] max-w-full flex-col bg-[#8B0F14] text-white shadow-2xl" aria-label="Navigasi Superadmin">
-                        <div className="flex h-20 shrink-0 items-center justify-between border-b border-white/10 px-5">
-                            <Brand />
-                            <button type="button" onClick={closeMobileNav} aria-label="Tutup navigasi" className="ml-2 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-white/80 transition hover:bg-white/10 hover:text-white">
-                                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18 18 6M6 6l12 12" />
-                                </svg>
-                            </button>
-                        </div>
-                        <div className="shrink-0 px-5 py-4 text-[11px] font-semibold uppercase tracking-wider text-white/55">Menu</div>
-                        <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto overscroll-contain px-4 pb-4">
-                            <NavigationLinks url={url} onNavigate={closeMobileNav} />
-                        </nav>
-                        <div className="shrink-0 border-t border-white/10">
-                            <ProfileActions user={user} onNavigate={closeMobileNav} mobile />
-                        </div>
-                    </aside>
-                </div>
-            )}
+                    <div className="flex h-20 shrink-0 items-center justify-between border-b border-white/10 px-5">
+                        <Brand />
+                        <button
+                            type="button"
+                            onClick={closeMobileNav}
+                            aria-label="Tutup navigasi"
+                            className="ml-2 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-white/80 transition hover:bg-white/10 hover:text-white"
+                        >
+                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18 18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div className="shrink-0 px-5 py-4 text-[11px] font-semibold uppercase tracking-wider text-white/55">
+                        Menu
+                    </div>
+
+                    <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto overscroll-contain px-4 pb-4">
+                        <NavigationLinks url={url} onNavigate={closeMobileNav} />
+                    </nav>
+
+                    <div className="shrink-0 border-t border-white/10">
+                        <ProfileActions user={user} onNavigate={closeMobileNav} mobile />
+                    </div>
+                </aside>
+            </div>
         </div>
     );
 }

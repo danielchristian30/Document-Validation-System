@@ -53,10 +53,12 @@ Route::middleware(['auth', 'role:superadmin','superadmin.whitelist'])->group(fun
 // Route Admin
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
-    Route::get('/admin/employees', function () { return Inertia::render('Admin/Employees/Index'); })->name('admin.employees.index');
+    Route::get('/admin/employee-management', function () { return Inertia::render('Admin/EmployeeManagement/Index'); })->name('admin.employee-management.index');
     Route::get('/admin/document-recap', function () { return Inertia::render('Admin/DocumentRecap/Index'); })->name('admin.document-recap.index');
+    Route::get('/admin/document-activity-log', function () { return Inertia::render('Admin/DocumentActivityLog/Index'); })->name('admin.document-activity-log.index');
+    Route::get('/admin/document-management', function () { return Inertia::render('Admin/DocumentManagement/Index'); })->name('admin.document-management.index');
+    Route::get('/admin/document-revoke', function () { return Inertia::render('Admin/DocumentRevoke/Index'); })->name('admin.document-revoke.index');
 });
-
 // Route Employee
 Route::middleware(['auth', 'role:employee'])->group(function () {
     Route::get('/employee/dashboard', [EmployeeDashboardController::class, 'index'])->name('employee.dashboard');
